@@ -1,0 +1,397 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm"
+  },
+  "newProjectRoot": "projects",
+  "projects": {
+    "atlas": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "skipTests": true
+        }
+      },
+      "root": "apps/atlas",
+      "sourceRoot": ".",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "atlas:esbuild",
+            "federationConfig": "apps/atlas/federation.config.js"
+          },
+          "configurations": {
+            "production": {
+              "target": "atlas:esbuild:production"
+            },
+            "development": {
+              "target": "atlas:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "esbuild": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/atlas/src/main.ts",
+            "index": "apps/atlas/src/index.html",
+            "tsConfig": "apps/atlas/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/atlas/public"
+              }
+            ],
+            "styles": ["apps/atlas/src/styles.css"],
+            "polyfills": ["es-module-shims"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "atlas:serve-original",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 0,
+            "federationConfig": "apps/atlas/federation.config.js"
+          }
+        },
+        "serve-original": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4200
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "atlas:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "atlas:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "atlas:esbuild",
+            "runnerConfig": "vitest.config.ts",
+            "tsConfig": "tsconfig.spec.json",
+            "include": ["libs/**/*.spec.ts"]
+          }
+        }
+      }
+    },
+    "mfe-dashboard": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "skipTests": true
+        }
+      },
+      "root": "apps/mfe-dashboard",
+      "sourceRoot": "apps/mfe-dashboard/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-dashboard:esbuild",
+            "federationConfig": "apps/mfe-dashboard/federation.config.js"
+          },
+          "configurations": {
+            "production": {
+              "target": "mfe-dashboard:esbuild:production"
+            },
+            "development": {
+              "target": "mfe-dashboard:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "esbuild": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/mfe-dashboard/src/main.ts",
+            "tsConfig": "apps/mfe-dashboard/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/mfe-dashboard/public"
+              }
+            ],
+            "styles": ["apps/mfe-dashboard/src/styles.css"],
+            "polyfills": ["es-module-shims"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-dashboard:serve-original",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 0,
+            "federationConfig": "apps/mfe-dashboard/federation.config.js"
+          }
+        },
+        "serve-original": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4201,
+            "headers": {
+              "Access-Control-Allow-Origin": "*"
+            }
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "mfe-dashboard:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "mfe-dashboard:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "mfe-settings": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "skipTests": true
+        }
+      },
+      "root": "apps/mfe-settings",
+      "sourceRoot": "apps/mfe-settings/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-settings:esbuild",
+            "federationConfig": "apps/mfe-settings/federation.config.js"
+          },
+          "configurations": {
+            "production": {
+              "target": "mfe-settings:esbuild:production"
+            },
+            "development": {
+              "target": "mfe-settings:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "esbuild": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/mfe-settings/src/main.ts",
+            "tsConfig": "apps/mfe-settings/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/mfe-settings/public"
+              }
+            ],
+            "styles": ["apps/mfe-settings/src/styles.css"],
+            "polyfills": ["es-module-shims"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-settings:serve-original",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 0,
+            "federationConfig": "apps/mfe-settings/federation.config.js"
+          }
+        },
+        "serve-original": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4202,
+            "headers": {
+              "Access-Control-Allow-Origin": "*"
+            }
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "mfe-settings:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "mfe-settings:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    },
+    "mfe-stocks": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "skipTests": true
+        }
+      },
+      "root": "apps/mfe-stocks",
+      "sourceRoot": "apps/mfe-stocks/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-stocks:esbuild",
+            "federationConfig": "apps/mfe-stocks/federation.config.js"
+          },
+          "configurations": {
+            "production": {
+              "target": "mfe-stocks:esbuild:production"
+            },
+            "development": {
+              "target": "mfe-stocks:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "esbuild": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "apps/mfe-stocks/src/main.ts",
+            "tsConfig": "apps/mfe-stocks/tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "apps/mfe-stocks/public"
+              }
+            ],
+            "styles": ["apps/mfe-stocks/src/styles.css"],
+            "polyfills": ["es-module-shims"]
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kB",
+                  "maximumError": "1MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-architects/native-federation:build",
+          "options": {
+            "target": "mfe-stocks:serve-original",
+            "rebuildDelay": 0,
+            "dev": true,
+            "port": 0,
+            "federationConfig": "apps/mfe-stocks/federation.config.js"
+          }
+        },
+        "serve-original": {
+          "builder": "@angular/build:dev-server",
+          "options": {
+            "port": 4203,
+            "headers": {
+              "Access-Control-Allow-Origin": "*"
+            }
+          },
+          "configurations": {
+            "production": {
+              "buildTarget": "mfe-stocks:esbuild:production"
+            },
+            "development": {
+              "buildTarget": "mfe-stocks:esbuild:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  }
+}

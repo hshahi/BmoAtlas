@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Utilities Layer — BmoAtlas
+   Utility classes for common patterns
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+
+  .text-gain { color: var(--color-gain); }
+  .text-loss { color: var(--color-loss); }
+  .text-muted { color: var(--color-text-muted); }
+  .text-secondary { color: var(--color-text-secondary); }
+
+  .font-mono { font-family: var(--font-mono); }
+  .font-medium { font-weight: var(--weight-medium); }
+  .font-semibold { font-weight: var(--weight-semibold); }
+  .font-bold { font-weight: var(--weight-bold); }
+
+  .text-center { text-align: center; }
+  .text-right { text-align: right; }
+}

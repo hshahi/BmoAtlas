@@ -1,0 +1,15 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Base Layer — BmoAtlas
+   Body defaults that consume design tokens
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--leading-normal);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    transition: color var(--transition-base), background-color var(--transition-base);
+  }
+}

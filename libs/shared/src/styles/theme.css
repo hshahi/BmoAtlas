@@ -1,0 +1,18 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Theme Entry Point — BmoAtlas
+   Import this file in each app's styles.css:
+     @import '@shared/styles/theme.css';
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Layer order declaration — must come first */
+@layer reset, base, layout, components, utilities;
+
+/* Design tokens (not in a layer — always available) */
+@import './_tokens.css';
+
+/* Layered styles */
+@import './_reset.css';
+@import './_base.css';
+@import './_layout.css';
+@import './_components.css';
+@import './_utilities.css';

@@ -1,0 +1,73 @@
+<div class="data-status">
+@switch (true) {
+
+	<!-- Idle State (for LazyDataRef before load) -->
+	@case (isIdle()) {
+		@if (idleTemplate()) {
+			<ng-container *ngTemplateOutlet="idleTemplate(); context: idleContext()" />
+		}
+	}
+
+	<!-- Loading State -->
+	@case (isLoading()) {
+		@if (loadingTemplate()) {
+			<ng-container *ngTemplateOutlet="loadingTemplate()!" />
+		} @else {
+			<div class="data-status__loading">
+				<div class="data-status__spinner"></div>
+				<span>Loading...</span>
+			</div>
+		}
+	}
+
+	<!-- Reloading State -->
+	@case (isReloading() && showReloadingState()) {
+		@if (reloadingTemplate()) {
+			<ng-container *ngTemplateOutlet="reloadingTemplate()!; context: reloadingContext()" />
+		} @else if (contentTemplate() && contentContext()) {
+			<div class="data-status__reloading-wrapper">
+				<div class="data-status__reloading-overlay">
+					<div class="data-status__spinner data-status__spinner--small"></div>
+				</div>
+				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+			</div>
+		}
+	}
+
+	<!-- Error State -->
+	@case (isError()) {
+		@if (errorTemplate()) {
+			<ng-container *ngTemplateOutlet="errorTemplate()!; context: errorContext()" />
+		} @else {
+			<div class="data-status__error">
+				<span class="data-status__error-icon">⚠</span>
+				<p>Something went wrong</p>
+				<button class="data-status__retry-btn" (click)="reload()">Retry</button>
+			</div>
+		}
+	}
+
+	<!-- Empty State -->
+	@case (isEmpty()) {
+		@if (emptyTemplate()) {
+			<ng-container *ngTemplateOutlet="emptyTemplate()!" />
+		} @else {
+			<div class="data-status__empty">
+				<p>No data available</p>
+			</div>
+		}
+	}
+
+	<!-- Success/Content State -->
+	@case (showContent()) {
+		@if (contentTemplate() && contentContext()) {
+			<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+		}
+	}
+}
+
+<!-- Reloading without separate template show content with overlay -->
+@if (isReloading() && !showReloadingState() && contentTemplate() && contentContext()) {
+	<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+}
+</div>

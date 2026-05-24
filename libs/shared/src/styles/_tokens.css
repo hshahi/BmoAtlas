@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Design Tokens — BmoAtlas
+   BMO Capital Markets color scheme
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Typography ─────────────────────────────────────────────── */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont,
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas,
+    monospace;
+
+  --text-xs:   clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
+  --text-sm:   clamp(0.75rem, 0.7rem + 0.2vw, 0.875rem);
+  --text-base: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+  --text-lg:   clamp(1rem, 0.9rem + 0.4vw, 1.25rem);
+  --text-xl:   clamp(1.25rem, 1.1rem + 0.6vw, 1.5rem);
+  --text-2xl:  clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  --text-3xl:  clamp(1.875rem, 1.4rem + 1.5vw, 2.5rem);
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.8;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ── Spacing ────────────────────────────────────────────────── */
+  --space-xs:  0.25rem;
+  --space-sm:  0.5rem;
+  --space-md:  1rem;
+  --space-lg:  1.5rem;
+  --space-xl:  2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* ── Radii ──────────────────────────────────────────────────── */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────────────────── */
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* ── Transitions ─────────────────────────────────────────────── */
+  --transition-fast: 150ms ease;
+  --transition-base: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* ── Z-Index ──────────────────────────────────────────────────── */
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-overlay: 300;
+  --z-modal: 400;
+  --z-toast: 500;
+
+  /* ── BMO Brand Colors ──────────────────────────────────────── */
+  --bmo-navy:        #002f6c;
+  --bmo-navy-dark:   #001d44;
+  --bmo-navy-light:  #003d8f;
+  --bmo-blue:        #0075be;
+  --bmo-blue-light:  #4da3d4;
+  --bmo-blue-pale:   #e6f2fa;
+  --bmo-red:         #cc0000;
+  --bmo-white:       #ffffff;
+  --bmo-gray-100:    #f5f5f5;
+  --bmo-gray-200:    #e8e8e8;
+  --bmo-gray-300:    #d0d0d0;
+  --bmo-gray-400:    #a0a0a0;
+  --bmo-gray-500:    #707070;
+  --bmo-gray-600:    #505050;
+  --bmo-gray-700:    #333333;
+
+  /* ── Light Theme (default) ───────────────────────────────────── */
+  --color-bg:          #f0f2f5;
+  --color-bg-surface:  #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted:    #f5f5f5;
+
+  --color-text:          #1a1d23;
+  --color-text-secondary: #5f6368;
+  --color-text-muted:    #9aa0a6;
+  --color-text-inverse:  #ffffff;
+
+  --color-border:       #e1e4e8;
+  --color-border-focus: var(--bmo-blue);
+
+  --color-primary:       var(--bmo-blue);
+  --color-primary-hover: var(--bmo-navy-light);
+  --color-primary-light: var(--bmo-blue-pale);
+
+  --color-success:       #16a34a;
+  --color-success-light: #dcfce7;
+  --color-danger:        var(--bmo-red);
+  --color-danger-light:  #fee2e2;
+  --color-warning:       #d97706;
+  --color-warning-light: #fef3c7;
+  --color-info:          var(--bmo-blue);
+  --color-info-light:    var(--bmo-blue-pale);
+
+  --color-gain:  #16a34a;
+  --color-loss:  var(--bmo-red);
+
+  /* ── Toolbar / Nav specific ──────────────────────────────────── */
+  --toolbar-bg:          var(--bmo-navy);
+  --toolbar-bg-secondary: var(--bmo-navy-light);
+  --toolbar-text:        var(--bmo-white);
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.7);
+  --toolbar-border:      rgba(255, 255, 255, 0.15);
+  --toolbar-height:      40px;
+  --toolbar-secondary-height: 32px;
+
+  --sidemenu-bg:         var(--bmo-navy);
+  --sidemenu-text:       rgba(255, 255, 255, 0.65);
+  --sidemenu-text-hover: var(--bmo-white);
+  --sidemenu-active-bg:  rgba(255, 255, 255, 0.1);
+  --sidemenu-border:     rgba(255, 255, 255, 0.08);
+  --sidemenu-width:      220px;
+
+  /* ── Responsive breakpoints (reference only — use in @media) ── */
+  --bp-sm:  480px;
+  --bp-md:  768px;
+  --bp-lg:  1024px;
+  --bp-xl:  1280px;
+
+  /* ── Touch target minimum (WCAG 2.2 Level AAA) ─────────────── */
+  --touch-target-min: 44px;
+
+  /* ── Overlay ───────────────────────────────────────────────── */
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+  --z-backdrop: 250;
+
+  /* LoadWrapper overrides */
+  --text-secondary: var(--color-text-secondary);
+  --border-color: var(--color-border);
+  --primary-color: var(--color-primary);
+  --background-color: var(--color-bg-surface);
+  --text-primary: var(--color-text);
+  --hover-background: var(--color-bg-muted);
+  --active-background: var(--color-border);
+
+  /* Accent color for loader arcs */
+  --color-accent: #38bdf8;
+
+  color-scheme: light;
+}
+
+/* ── Dark Theme — applied via data-theme attribute ─────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg:          #0f1117;
+  --color-bg-surface:  #1a1d27;
+  --color-bg-elevated: #242836;
+  --color-bg-muted:    #2a2e3d;
+
+  --color-text:          #e8eaed;
+  --color-text-secondary: #9aa0a6;
+  --color-text-muted:    #5f6368;
+  --color-text-inverse:  #1a1d23;
+
+  --color-border:       #3c4049;
+  --color-border-focus: #60a5fa;
+
+  --color-primary:       #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-primary-light: #1e3a5f;
+
+  --color-success:       #4ade80;
+  --color-success-light: #14532d;
+  --color-danger:        #f87171;
+  --color-danger-light:  #7f1d1d;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info:          #22d3ee;
+  --color-info-light:    #164e63;
+
+  --color-gain:  #4ade80;
+  --color-loss:  #f87171;
+
+  /* Accent color for loader arcs — brighter in dark mode */
+  --color-accent: #7dd3fc;
+
+  --toolbar-bg:          #111827;
+  --toolbar-bg-secondary: #1f2937;
+  --toolbar-text:        #e8eaed;
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.5);
+  --toolbar-border:      rgba(255, 255, 255, 0.1);
+
+  --sidemenu-bg:         #111827;
+  --sidemenu-text:       rgba(255, 255, 255, 0.6);
+  --sidemenu-text-hover: #e8eaed;
+  --sidemenu-active-bg:  rgba(255, 255, 255, 0.08);
+  --sidemenu-border:     rgba(255, 255, 255, 0.06);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+}

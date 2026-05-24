@@ -1,0 +1,25 @@
+<div class="loader" [class.loader--overlay]="overlay()" role="status" aria-live="polite">
+  <div class="loader__spinner">
+    <svg viewBox="0 0 60 60" aria-hidden="true">
+      <!-- Outer arc — rotates clockwise -->
+      <circle
+        class="loader__arc loader__arc--outer"
+        cx="30" cy="30" r="26"
+        fill="none"
+        stroke-width="3.5"
+        stroke-linecap="round"
+      />
+      <!-- Inner arc — rotates anti-clockwise -->
+      <circle
+        class="loader__arc loader__arc--inner"
+        cx="30" cy="30" r="16"
+        fill="none"
+        stroke-width="3.5"
+        stroke-linecap="round"
+      />
+    </svg>
+  </div>
+  @if (message()) {
+    <p class="loader__message">{{ message() }}</p>
+  }
+</div>

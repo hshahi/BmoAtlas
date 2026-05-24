@@ -1,0 +1,23 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Layout Layer — BmoAtlas
+   Page grid, containers, sections
+   ═══════════════════════════════════════════════════════════════════ */
+
+@layer layout {
+  .page-grid {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100dvh;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: var(--space-md);
+  }
+
+  .section {
+    padding-block: var(--space-2xl);
+  }
+}

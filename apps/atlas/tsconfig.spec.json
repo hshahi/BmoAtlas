@@ -1,0 +1,26 @@
+/* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
+/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "../../out-tsc/spec",
+    "types": [
+      "vitest/globals"
+    ],
+    "paths": {
+      "@core/*": ["../../libs/core/src/*"],
+      "@core": ["../../libs/core/src/index.ts"],
+      "@shared/*": ["../../libs/shared/src/*"],
+      "@shared": ["../../libs/shared/src/index.ts"]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.spec.ts",
+    "../../libs/**/*.ts",
+    "../../libs/**/*.d.ts",
+    "../../libs/**/*.spec.ts"
+  ]
+}

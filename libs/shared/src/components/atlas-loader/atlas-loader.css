@@ -1,0 +1,69 @@
+:host {
+  display: block;
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md, 1rem);
+  padding: var(--space-xl, 2rem);
+}
+
+.loader--overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay, 300);
+  background: color-mix(in srgb, var(--color-bg-surface, var(--color-bg, #f8f9fb)) 85%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+.loader__spinner {
+  width: 56px;
+  height: 56px;
+}
+
+.loader__spinner svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Outer arc — clockwise ─────────────────────────────── */
+.loader__arc--outer {
+  stroke: var(--color-primary, #60a5fa);
+  /* Show ~120° of the circle  (circumference ≈ 163.4) */
+  stroke-dasharray: 54 109.4;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: rotate-cw 1.2s linear infinite;
+}
+
+/* ── Inner arc — anti-clockwise ────────────────────────── */
+.loader__arc--inner {
+  stroke: var(--color-accent, #7dd3fc);
+  /* Show ~100° of the circle  (circumference ≈ 100.5) */
+  stroke-dasharray: 34 66.5;
+  stroke-dashoffset: 0;
+  transform-origin: center;
+  animation: rotate-ccw 1s linear infinite;
+}
+
+.loader__message {
+  font-size: var(--text-sm, 0.875rem);
+  color: var(--color-text-secondary, #5f6368);
+  font-weight: var(--weight-medium, 500);
+}
+
+/* ── Keyframes ─────────────────────────────────────────── */
+@keyframes rotate-cw {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rotate-ccw {
+  to {
+    transform: rotate(-360deg);
+  }
+}
