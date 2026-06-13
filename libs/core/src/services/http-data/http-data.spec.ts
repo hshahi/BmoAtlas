@@ -3,7 +3,7 @@ import { Injector, signal } from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
-import { HttpData, DataOptions, MutationOptions } from './http-data';
+import { HttpData, DataOptions, MutationOptions, GetOptions } from './http-data';
 
 interface TestItem {
     id: number;
@@ -818,6 +818,97 @@ describe('HttpData', () => {
     // Static factory methods
     // ---------------------------------------------------------------------------
     describe('static factory methods', () => {
+        describe('HttpData.get()', () => {
+            it('should create an HttpData with GET method', async () => {
+                const data = HttpData.get<TestItem>(injector, {
+                    url: '/api/items/1',
+                });
+                data.load();
+                await stabilize();
+                const reqs = httpTesting.match('/api/items/1');
+                expect(reqs.length).toBeGreaterThan(0);
+                expect(reqs[0].request.method).toBe('GET');
+                reqs.forEach(req => req.flush({ id: 1, name: 'fetched' }));
+            });
+
+            it('should support all DataOptions except method and body', async () => {
+                const data = HttpData.get<TestItem>(injector, {
+                    url: '/api/items/1',
+                    headers: { 'X-Custom': 'value' },
+                    params: { version: 2 },
+                    defaultValue: { id: 0, name: 'default' },
+                });
+                expect(data.value()).toEqual({ id: 0, name: 'default' });
+                data.load();
+                await stabilize();
+                const reqs = httpTesting.match(r => r.url === '/api/items/1');
+                expect(reqs[0].request.headers.get('X-Custom')).toBe('value');
+                expect(reqs[0].request.params.get('version')).toBe('2');
+                reqs.forEach(req => req.flush({ id: 1, name: 'fetched' }));
+            });
+
+            it('should support a function-based URL', async () => {
+                const id = signal(42);
+                const data = HttpData.get<TestItem>(injector, {
+                    url: () => `/api/items/${id()}`,
+                });
+                data.load();
+                await stabilize();
+                const reqs = httpTesting.match(r => r.url.startsWith('/api/items/'));
+                expect(reqs.length).toBeGreaterThan(0);
+                expect(reqs[0].request.url).toBe('/api/items/42');
+                reqs.forEach(req => req.flush({ id: 42, name: 'item 42' }));
+            });
+
+            it('should support parse option', async () => {
+                const data = HttpData.get<TestItem>(injector, {
+                    url: '/api/items/1',
+                    parse: (raw: unknown) => {
+                        const r = raw as { item_id: number; item_name: string };
+                        return { id: r.item_id, name: r.item_name };
+                    },
+                });
+                data.load();
+                await stabilize();
+                const reqs = httpTesting.match('/api/items/1');
+                reqs.forEach(req => req.flush({ item_id: 1, item_name: 'parsed' }));
+                await stabilize();
+
+                expect(data.value()).toEqual({ id: 1, name: 'parsed' });
+            });
+
+            it('should support the full lifecycle via get()', async () => {
+                const data = HttpData.get<TestItem>(injector, {
+                    url: '/api/items/1',
+                });
+
+                // Lazy — not loaded yet
+                expect(data.isLoaded()).toBe(false);
+                expect(data.resource).toBeNull();
+
+                // Load
+                data.load();
+                await stabilize();
+                const reqs = httpTesting.match('/api/items/1');
+                reqs.forEach(req => req.flush({ id: 1, name: 'lifecycle test' }));
+                await stabilize();
+
+                expect(data.value()).toEqual({ id: 1, name: 'lifecycle test' });
+                expect(data.isSuccess()).toBe(true);
+
+                // Set locally
+                data.set({ id: 1, name: 'local override' });
+                await stabilize();
+                expect(data.value()).toEqual({ id: 1, name: 'local override' });
+                expect(data.isLocal()).toBe(true);
+
+                // Destroy
+                data.destroy();
+                expect(data.isLoaded()).toBe(false);
+                expect(data.resource).toBeNull();
+            });
+        });
+
         describe('HttpData.post()', () => {
             it('should create an HttpData with POST method', async () => {
                 const data = HttpData.post<TestItem, { name: string }>(injector, {

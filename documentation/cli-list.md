@@ -72,6 +72,9 @@ npm install es-module-shims
 # Concurrently — run all 3 dev servers in parallel
 npm install --save-dev concurrently
 
+# Wait-on — wait for MFE ports before starting the shell
+npm install --save-dev wait-on
+
 # Kill-port — free ports before starting dev servers
 npm install --save-dev kill-port
 
@@ -171,7 +174,7 @@ npm install @angular-architects/native-federation
 npm install es-module-shims
 
 # Dev dependencies
-npm install --save-dev concurrently kill-port rimraf prettier
+npm install --save-dev concurrently wait-on kill-port rimraf prettier
 npm install --save-dev vitest @vitest/browser-playwright @vitest/coverage-v8 playwright jsdom
 ```
 

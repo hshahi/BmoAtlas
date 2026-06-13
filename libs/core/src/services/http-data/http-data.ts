@@ -21,7 +21,13 @@ export type MutationOptions<T, TBody> = Omit<DataOptions<T, TBody>, 'method'> & 
     body: TBody | (() => TBody);
 };
 
+export type GetOptions<T> = Omit<DataOptions<T>, 'method' | 'body'>;
+
 export class HttpData<T, TBody = unknown> {
+
+    static get<T>(injector: Injector, options: GetOptions<T>): HttpData<T> {
+        return new HttpData<T>(injector, { ...options, method: 'GET' });
+    }
 
     static post<T, TBody>(injector: Injector, options: MutationOptions<T, TBody>): HttpData<T, TBody> {
         return new HttpData<T, TBody>(injector, { ...options, method: 'POST' });

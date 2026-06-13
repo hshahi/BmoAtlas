@@ -5,7 +5,7 @@
     "ng": "ng",
     "clean": "rimraf dist .angular",
     "kill-ports": "node -e \"const k=require('kill-port');[4200,4201,4202,4203].forEach(p=>k(p).catch(()=>{}))\"",
-    "dev": "npm run kill-ports && npm run clean && concurrently --kill-others -n dashboard,settings,stocks,shell -c blue,magenta,yellow,green \"npm run start:dashboard\" \"npm run start:settings\" \"npm run start:stocks\" \"npm run start:atlas\"",
+    "dev": "npm run kill-ports && npm run clean && concurrently --kill-others -n dashboard,settings,stocks,shell -c blue,magenta,yellow,green \"npm run start:dashboard\" \"npm run start:settings\" \"npm run start:stocks\" \"wait-on tcp:4201 tcp:4202 tcp:4203 && npm run start:atlas\"",
     "start": "ng serve atlas",
     "start:atlas": "ng serve atlas",
     "start:dashboard": "ng serve mfe-dashboard",
@@ -50,6 +50,7 @@
     "prettier": "^3.8.1",
     "rimraf": "^6.1.3",
     "typescript": "~5.9.2",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.0",
+    "wait-on": "^9.0.10"
   }
 }

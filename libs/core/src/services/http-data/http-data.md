@@ -30,7 +30,22 @@ export class ItemService {
 
 ### Static factory methods
 
-For mutation operations (`POST`, `PUT`, `PATCH`), static factory methods provide a cleaner API that encodes the HTTP method in the function name and **requires** a `body`:
+Static factory methods provide a cleaner API that encodes the HTTP method in the function name:
+
+```ts
+// Instead of:
+readonly item = new HttpData<Item>(this.injector, {
+  url: '/api/items/1',
+  method: 'GET',
+});
+
+// Use:
+readonly item = HttpData.get<Item>(this.injector, {
+  url: '/api/items/1',
+});
+```
+
+For mutation operations (`POST`, `PUT`, `PATCH`), the factory methods **require** a `body`:
 
 ```ts
 // Instead of:
@@ -47,15 +62,17 @@ readonly result = HttpData.post<Item, CreateDto>(this.injector, {
 });
 ```
 
-| Factory | HTTP method | Body required? |
-|---|---|---|
-| `HttpData.post<T, TBody>(injector, options)` | `POST` | ✅ Yes |
-| `HttpData.put<T, TBody>(injector, options)` | `PUT` | ✅ Yes |
-| `HttpData.patch<T, TBody>(injector, options)` | `PATCH` | ✅ Yes |
+| Factory | HTTP method | Body required? | Options type |
+|---|---|---|---|
+| `HttpData.get<T>(injector, options)` | `GET` | ❌ No | `GetOptions<T>` |
+| `HttpData.post<T, TBody>(injector, options)` | `POST` | ✅ Yes | `MutationOptions<T, TBody>` |
+| `HttpData.put<T, TBody>(injector, options)` | `PUT` | ✅ Yes | `MutationOptions<T, TBody>` |
+| `HttpData.patch<T, TBody>(injector, options)` | `PATCH` | ✅ Yes | `MutationOptions<T, TBody>` |
 
-The `options` parameter is a `MutationOptions<T, TBody>` — identical to `DataOptions` but with `method` removed and `body` made required.
+- `GetOptions<T>` is `DataOptions` with `method` and `body` removed.
+- `MutationOptions<T, TBody>` is `DataOptions` with `method` removed and `body` made required.
 
-> **Note:** `GET` does not need a factory — it is the default method. `DELETE` rarely has a body, so `new HttpData(injector, { url, method: 'DELETE' })` is clear enough.
+> **Note:** `DELETE` rarely has a body, so `new HttpData(injector, { url, method: 'DELETE' })` is clear enough.
 
 ## DataOptions
 
@@ -211,6 +228,19 @@ export class ItemListComponent {
   ngOnInit(): void {
     this.items.load();
   }
+}
+```
+
+### GET with factory method
+
+```ts
+readonly item = HttpData.get<Item>(this.injector, {
+  url: '/api/items/1',
+  defaultValue: { id: 0, name: 'N/A' },
+});
+
+ngOnInit(): void {
+  this.item.load();
 }
 ```
 

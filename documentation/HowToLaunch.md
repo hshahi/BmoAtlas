@@ -17,7 +17,7 @@ The shell dynamically loads MFE bundles at runtime when you navigate via the sid
 
 ### Option 1: Terminal — `npm run dev`
 
-Start all three servers with a single command:
+Start all four servers with a single command:
 
 ```bash
 npm run dev
@@ -28,9 +28,9 @@ This uses `concurrently` to run all servers in one terminal with color-coded, la
 - **[dashboard]** (blue) → `http://localhost:4201`
 - **[settings]** (magenta) → `http://localhost:4202`
 - **[stocks]** (yellow) → `http://localhost:4203`
-- **[shell]** (green) → `http://localhost:4200`
+- **[shell]** (green) → `http://localhost:4200` *(starts only after all MFEs are ready)*
 
-Open **http://localhost:4200** in your browser once all three have compiled.
+The shell waits for all three MFE ports (4201, 4202, 4203) to be available before starting, using `wait-on`. This ensures that when `http://localhost:4200` appears in the terminal, all MFEs are already compiled and serving — so you can open the URL immediately without encountering missing-module errors.
 
 Press `Ctrl+C` to stop all servers at once.
 
