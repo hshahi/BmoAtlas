@@ -9,6 +9,23 @@ export const routes: Routes = [
     data: { breadcrumb: 'Home' },
   },
 
+  // ── Search (page discovery) ─────────────────────────────
+  {
+    path: 'search',
+    data: { breadcrumb: 'Search' },
+    children: [
+      {
+        path: '',
+        loadComponent: () => import('./pages/search/search-page').then(m => m.SearchPage),
+      },
+      {
+        path: 'detail/:pageId',
+        loadComponent: () => import('./pages/search/page-detail').then(m => m.PageDetail),
+        data: { breadcrumb: 'Page Detail' },
+      },
+    ],
+  },
+
   // ── Front Office (area with 2 MFE apps) ──────────────────
   {
     path: 'front-office',

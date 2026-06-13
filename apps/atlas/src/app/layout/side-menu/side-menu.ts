@@ -30,6 +30,12 @@ export interface MenuArea {
       <!-- User bar at top of menu -->
       <div class="side-menu__user-bar">
         <span class="side-menu__username">ibg&#92;user</span>
+        <a
+          class="side-menu__search-btn"
+          routerLink="/search"
+          aria-label="Search pages"
+          title="Search pages"
+        >🔍</a>
       </div>
       <div class="side-menu__viewport">
         <div
@@ -175,9 +181,30 @@ export interface MenuArea {
       border-bottom: 1px solid var(--sidemenu-border);
       flex-shrink: 0;
       white-space: nowrap;
+      gap: var(--space-sm);
     }
     .side-menu__username {
       font-weight: var(--weight-medium);
+    }
+    .side-menu__search-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      margin-left: auto;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      font-size: var(--text-sm);
+      line-height: 1;
+      transition: background var(--transition-fast);
+    }
+    .side-menu__search-btn:hover {
+      background: var(--sidemenu-active-bg);
+    }
+    .side-menu__search-btn:focus-visible {
+      outline: 2px solid var(--bmo-blue-light);
+      outline-offset: -2px;
     }
 
     /* ══════════════════════════════════════════════

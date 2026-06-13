@@ -1,0 +1,79 @@
+[
+  {
+    "id": "dashboard-overview",
+    "app": "Dashboard",
+    "appRoute": "/front-office/dashboard",
+    "page": "Overview",
+    "pageRoute": "/front-office/dashboard/overview",
+    "description": "High-level summary of key metrics, KPIs, and portfolio performance across all trading desks.",
+    "keywords": ["metrics", "KPI", "portfolio", "performance", "summary", "dashboard"],
+    "docPath": "assets/pages/dashboard/overview.md",
+    "imagePath": "assets/pages/dashboard/overview.png"
+  },
+  {
+    "id": "dashboard-analytics",
+    "app": "Dashboard",
+    "appRoute": "/front-office/dashboard",
+    "page": "Analytics",
+    "pageRoute": "/front-office/dashboard/analytics",
+    "description": "Interactive charts and data visualisations for analysing trading patterns, volumes, and trends over time.",
+    "keywords": ["charts", "analytics", "trends", "visualisation", "trading", "volume"],
+    "docPath": "assets/pages/dashboard/analytics.md",
+    "imagePath": "assets/pages/dashboard/analytics.png"
+  },
+  {
+    "id": "dashboard-reports",
+    "app": "Dashboard",
+    "appRoute": "/front-office/dashboard",
+    "page": "Reports",
+    "pageRoute": "/front-office/dashboard/reports",
+    "description": "Generate, view, and export tabular reports on trading activity, P&L, and risk exposure.",
+    "keywords": ["reports", "export", "P&L", "risk", "trading", "tabular"],
+    "docPath": "assets/pages/dashboard/reports.md",
+    "imagePath": "assets/pages/dashboard/reports.png"
+  },
+  {
+    "id": "settings-general",
+    "app": "Settings",
+    "appRoute": "/front-office/settings",
+    "page": "General",
+    "pageRoute": "/front-office/settings/general",
+    "description": "Application-wide settings including language, timezone, notification preferences, and display options.",
+    "keywords": ["settings", "preferences", "language", "timezone", "notifications", "configuration"],
+    "docPath": "assets/pages/settings/general.md",
+    "imagePath": "assets/pages/settings/general.png"
+  },
+  {
+    "id": "settings-profile",
+    "app": "Settings",
+    "appRoute": "/front-office/settings",
+    "page": "Profile",
+    "pageRoute": "/front-office/settings/profile",
+    "description": "View and edit your user profile, contact details, role assignments, and access permissions.",
+    "keywords": ["profile", "user", "contact", "role", "permissions", "account"],
+    "docPath": "assets/pages/settings/profile.md",
+    "imagePath": "assets/pages/settings/profile.png"
+  },
+  {
+    "id": "stocks-summary",
+    "app": "Stocks",
+    "appRoute": "/front-office/stocks",
+    "page": "Summary",
+    "pageRoute": "/front-office/stocks/summary",
+    "description": "Real-time stock price summary with live streaming data, showing current prices, changes, and market status.",
+    "keywords": ["stocks", "prices", "real-time", "streaming", "market", "live", "equities"],
+    "docPath": "assets/pages/stocks/summary.md",
+    "imagePath": "assets/pages/stocks/summary.png"
+  },
+  {
+    "id": "stocks-breakdown",
+    "app": "Stocks",
+    "appRoute": "/front-office/stocks",
+    "page": "Breakdown",
+    "pageRoute": "/front-office/stocks/breakdown",
+    "description": "Detailed breakdown of stock positions with table and list views, filtering, and drill-down capabilities.",
+    "keywords": ["stocks", "breakdown", "positions", "table", "filter", "drill-down", "detail"],
+    "docPath": "assets/pages/stocks/breakdown.md",
+    "imagePath": "assets/pages/stocks/breakdown.png"
+  }
+]
