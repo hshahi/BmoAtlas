@@ -35,10 +35,19 @@ import { ComponentBase } from '@core';
           <span class="toolbar__status-value">● Live</span>
         </div>
         <button class="toolbar__icon-btn" (click)="themeService.toggle()" [attr.aria-label]="'Switch theme (current: ' + themeService.resolved() + ')'">
-          @if (themeService.resolved() === 'dark') {
-            ☀️
-          } @else {
-            🌙
+          @switch (themeService.resolved()) {
+            @case ('light') { ☀️ }
+            @case ('dark') { 🌙 }
+            @case ('silver') { 🪙 }
+            @case ('midnight') { 🌌 }
+            @case ('platinum') { ⚪ }
+            @case ('chrome') { 🪞 }
+            @case ('titanium') { ⚫ }
+            @case ('nord') { ❄️ }
+            @case ('dracula') { 🧛 }
+            @case ('tokyo-night') { 🌃 }
+            @case ('high-contrast') { 🔲 }
+            @case ('catppuccin') { 🐱 }
           }
         </button>
         <button class="toolbar__icon-btn" (click)="menuToggle.emit()" aria-label="Toggle menu">
@@ -90,7 +99,7 @@ import { ComponentBase } from '@core';
       font-weight: var(--weight-bold);
       font-size: var(--text-lg);
       letter-spacing: 0.05em;
-      color: var(--bmo-white);
+      color: var(--toolbar-text);
     }
 
     .toolbar__logo-divider {

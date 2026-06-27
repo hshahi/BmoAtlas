@@ -1,0 +1,53 @@
+/* ── Midnight Theme — deep midnight-blue dark palette ──────── */
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --color-bg:          #050b1a;
+  --color-bg-surface:  #0b1428;
+  --color-bg-elevated: #111d3a;
+  --color-bg-muted:    #152141;
+
+  --color-text:          #dde6f5;
+  --color-text-secondary: #9fb0cc;
+  --color-text-muted:    #5d6f8f;
+  --color-text-inverse:  #050b1a;
+
+  --color-border:       #1c2a4a;
+  --color-border-focus: #5b8def;
+
+  --color-primary:       #5b8def;
+  --color-primary-hover: #3b6fd4;
+  --color-primary-light: #122142;
+
+  --color-success:       #34d399;
+  --color-success-light: #064e3b;
+  --color-danger:        #f87171;
+  --color-danger-light:  #7f1d1d;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info:          #38bdf8;
+  --color-info-light:    #0c4a6e;
+
+  --color-gain:  #34d399;
+  --color-loss:  #f87171;
+
+  /* Accent color for loader arcs — bright midnight blue */
+  --color-accent: #6ea8ff;
+
+  --toolbar-bg:          #030713;
+  --toolbar-bg-secondary: #0b1428;
+  --toolbar-text:        #dde6f5;
+  --toolbar-text-muted:  rgba(221, 230, 245, 0.5);
+  --toolbar-border:      rgba(91, 141, 239, 0.15);
+
+  --sidemenu-bg:         #030713;
+  --sidemenu-text:       rgba(221, 230, 245, 0.6);
+  --sidemenu-text-hover: #dde6f5;
+  --sidemenu-active-bg:  rgba(91, 141, 239, 0.15);
+  --sidemenu-border:     rgba(91, 141, 239, 0.1);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

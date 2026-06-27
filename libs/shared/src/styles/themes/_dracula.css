@@ -1,0 +1,52 @@
+/* ── Dracula Theme — dark purple ───────────────────────────── */
+:root[data-theme="dracula"] {
+  color-scheme: dark;
+
+  --color-bg:          #282a36;
+  --color-bg-surface:  #343746;
+  --color-bg-elevated: #44475a;
+  --color-bg-muted:    #2f313d;
+
+  --color-text:          #f8f8f2;
+  --color-text-secondary: #bdbecf;
+  --color-text-muted:    #6272a4;
+  --color-text-inverse:  #282a36;
+
+  --color-border:       #44475a;
+  --color-border-focus: #bd93f9;
+
+  --color-primary:       #bd93f9;
+  --color-primary-hover: #a87fe0;
+  --color-primary-light: #322a47;
+
+  --color-success:       #50fa7b;
+  --color-success-light: #1f3b27;
+  --color-danger:        #ff5555;
+  --color-danger-light:  #4a2326;
+  --color-warning:       #f1fa8c;
+  --color-warning-light: #45481f;
+  --color-info:          #8be9fd;
+  --color-info-light:    #1d3a40;
+
+  --color-gain:  #50fa7b;
+  --color-loss:  #ff5555;
+
+  --color-accent: #bd93f9;
+
+  --toolbar-bg:          #21222c;
+  --toolbar-bg-secondary: #282a36;
+  --toolbar-text:        #f8f8f2;
+  --toolbar-text-muted:  rgba(248, 248, 242, 0.6);
+  --toolbar-border:      rgba(189, 147, 249, 0.18);
+
+  --sidemenu-bg:         #21222c;
+  --sidemenu-text:       rgba(248, 248, 242, 0.62);
+  --sidemenu-text-hover: #f8f8f2;
+  --sidemenu-active-bg:  rgba(189, 147, 249, 0.16);
+  --sidemenu-border:     rgba(189, 147, 249, 0.1);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

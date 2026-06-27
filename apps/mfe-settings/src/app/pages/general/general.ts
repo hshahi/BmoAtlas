@@ -28,6 +28,86 @@ import { ThemeService } from '@shared';
             >
               🌙 Dark
             </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'silver'"
+              [class.btn--outline]="themeService.resolved() !== 'silver'"
+              (click)="themeService.setPreference('silver')"
+            >
+              🪙 Silver
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'midnight'"
+              [class.btn--outline]="themeService.resolved() !== 'midnight'"
+              (click)="themeService.setPreference('midnight')"
+            >
+              🌌 Midnight
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'platinum'"
+              [class.btn--outline]="themeService.resolved() !== 'platinum'"
+              (click)="themeService.setPreference('platinum')"
+            >
+              ⚪ Platinum
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'chrome'"
+              [class.btn--outline]="themeService.resolved() !== 'chrome'"
+              (click)="themeService.setPreference('chrome')"
+            >
+              🪞 Chrome
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'titanium'"
+              [class.btn--outline]="themeService.resolved() !== 'titanium'"
+              (click)="themeService.setPreference('titanium')"
+            >
+              ⚫ Titanium
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'nord'"
+              [class.btn--outline]="themeService.resolved() !== 'nord'"
+              (click)="themeService.setPreference('nord')"
+            >
+              ❄️ Nord
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'dracula'"
+              [class.btn--outline]="themeService.resolved() !== 'dracula'"
+              (click)="themeService.setPreference('dracula')"
+            >
+              🧛 Dracula
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'tokyo-night'"
+              [class.btn--outline]="themeService.resolved() !== 'tokyo-night'"
+              (click)="themeService.setPreference('tokyo-night')"
+            >
+              🌃 Tokyo Night
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'high-contrast'"
+              [class.btn--outline]="themeService.resolved() !== 'high-contrast'"
+              (click)="themeService.setPreference('high-contrast')"
+            >
+              🔲 High Contrast
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'catppuccin'"
+              [class.btn--outline]="themeService.resolved() !== 'catppuccin'"
+              (click)="themeService.setPreference('catppuccin')"
+            >
+              🐱 Catppuccin
+            </button>
           </div>
         </div>
       </div>
@@ -83,6 +163,7 @@ import { ThemeService } from '@shared';
     }
     .general__theme-options {
       display: flex;
+      flex-wrap: wrap;
       gap: var(--space-sm);
     }
   `],

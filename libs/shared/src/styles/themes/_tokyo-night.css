@@ -1,0 +1,52 @@
+/* ── Tokyo Night Theme — dark blue-violet ──────────────────── */
+:root[data-theme="tokyo-night"] {
+  color-scheme: dark;
+
+  --color-bg:          #1a1b26;
+  --color-bg-surface:  #24283b;
+  --color-bg-elevated: #2f334d;
+  --color-bg-muted:    #20222e;
+
+  --color-text:          #c0caf5;
+  --color-text-secondary: #9aa5ce;
+  --color-text-muted:    #565f89;
+  --color-text-inverse:  #1a1b26;
+
+  --color-border:       #2f334d;
+  --color-border-focus: #7aa2f7;
+
+  --color-primary:       #7aa2f7;
+  --color-primary-hover: #6889e0;
+  --color-primary-light: #1e2740;
+
+  --color-success:       #9ece6a;
+  --color-success-light: #233a2e;
+  --color-danger:        #f7768e;
+  --color-danger-light:  #3d2730;
+  --color-warning:       #e0af68;
+  --color-warning-light: #3d3320;
+  --color-info:          #7dcfff;
+  --color-info-light:    #173140;
+
+  --color-gain:  #9ece6a;
+  --color-loss:  #f7768e;
+
+  --color-accent: #7aa2f7;
+
+  --toolbar-bg:          #16161e;
+  --toolbar-bg-secondary: #24283b;
+  --toolbar-text:        #c0caf5;
+  --toolbar-text-muted:  rgba(192, 202, 245, 0.6);
+  --toolbar-border:      rgba(122, 162, 247, 0.16);
+
+  --sidemenu-bg:         #16161e;
+  --sidemenu-text:       rgba(192, 202, 245, 0.62);
+  --sidemenu-text-hover: #c0caf5;
+  --sidemenu-active-bg:  rgba(122, 162, 247, 0.16);
+  --sidemenu-border:     rgba(122, 162, 247, 0.1);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

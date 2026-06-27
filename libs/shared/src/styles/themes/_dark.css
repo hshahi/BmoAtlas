@@ -1,0 +1,53 @@
+/* ── Dark Theme — applied via data-theme attribute ─────────── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg:          #0f1117;
+  --color-bg-surface:  #1a1d27;
+  --color-bg-elevated: #242836;
+  --color-bg-muted:    #2a2e3d;
+
+  --color-text:          #e8eaed;
+  --color-text-secondary: #9aa0a6;
+  --color-text-muted:    #5f6368;
+  --color-text-inverse:  #1a1d23;
+
+  --color-border:       #3c4049;
+  --color-border-focus: #60a5fa;
+
+  --color-primary:       #60a5fa;
+  --color-primary-hover: #3b82f6;
+  --color-primary-light: #1e3a5f;
+
+  --color-success:       #4ade80;
+  --color-success-light: #14532d;
+  --color-danger:        #f87171;
+  --color-danger-light:  #7f1d1d;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info:          #22d3ee;
+  --color-info-light:    #164e63;
+
+  --color-gain:  #4ade80;
+  --color-loss:  #f87171;
+
+  /* Accent color for loader arcs — brighter in dark mode */
+  --color-accent: #7dd3fc;
+
+  --toolbar-bg:          #111827;
+  --toolbar-bg-secondary: #1f2937;
+  --toolbar-text:        #e8eaed;
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.5);
+  --toolbar-border:      rgba(255, 255, 255, 0.1);
+
+  --sidemenu-bg:         #111827;
+  --sidemenu-text:       rgba(255, 255, 255, 0.6);
+  --sidemenu-text-hover: #e8eaed;
+  --sidemenu-active-bg:  rgba(255, 255, 255, 0.08);
+  --sidemenu-border:     rgba(255, 255, 255, 0.06);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+}

@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BmoAtlas — Theme Previews</title>
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     Standalone preview — NOT part of the app or its build.
+     Each .theme panel sets the same CSS custom properties the real
+     app uses (_tokens.css), and the shared component CSS below reads
+     them — exactly mirroring the production architecture.
+     ───────────────────────────────────────────────────────────── */
+
+  :root {
+    --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Cascadia Code', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-sans);
+    background: #15171c;
+    color: #e8eaed;
+    padding: 32px;
+    line-height: 1.5;
+  }
+
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub   { color: #9aa0a6; margin-bottom: 28px; font-size: 14px; }
+  .group-title {
+    font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #9aa0a6; margin: 28px 0 14px; font-weight: 600;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+  }
+
+  /* ── A single theme mockup ─────────────────────────────────── */
+  .theme {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #2a2e3d;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 14px;
+  }
+
+  .label {
+    padding: 8px 14px;
+    background: #0c0e12;
+    color: #cdd2da;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid #2a2e3d;
+  }
+  .label .tag { color: #6b7280; font-family: var(--font-mono); font-weight: 400; }
+
+  .toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--toolbar-bg);
+    color: var(--toolbar-text);
+    border-bottom: 1px solid var(--toolbar-border);
+  }
+  .toolbar .brand { font-weight: 700; letter-spacing: 0.05em; }
+  .toolbar .icons { display: flex; gap: 8px; opacity: 0.85; }
+
+  .body { padding: 16px; }
+
+  .card {
+    background: var(--card-bg, var(--color-bg-surface));
+    border: 1px solid var(--card-border, var(--color-border));
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: var(--card-shadow, 0 1px 2px rgb(0 0 0 / 0.08));
+  }
+  .card h3 { font-size: 16px; margin-bottom: 4px; }
+  .card .muted { color: var(--color-text-secondary); font-size: 13px; margin-bottom: 12px; }
+
+  .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+  .btn {
+    padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    border: none; cursor: pointer; transition: filter 0.15s;
+  }
+  .btn:hover { filter: brightness(1.05); }
+  .btn-primary {
+    background: var(--btn-primary-bg, var(--color-primary));
+    color: var(--btn-text, var(--color-text-inverse));
+    box-shadow: var(--btn-shadow, none);
+    border: var(--btn-border, none);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+  }
+
+  .badge {
+    padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    box-shadow: var(--badge-shadow, none);
+  }
+  .badge-gain { background: var(--color-success-light); color: var(--color-gain); }
+  .badge-loss { background: var(--color-danger-light); color: var(--color-loss); }
+
+  .num { font-family: var(--font-mono); font-weight: 600; }
+  .gain { color: var(--color-gain); }
+  .loss { color: var(--color-loss); }
+
+  .input {
+    width: 100%; padding: 8px 12px; border-radius: 8px;
+    background: var(--input-bg, var(--color-bg-surface));
+    border: 1px solid var(--input-border, var(--color-border));
+    box-shadow: var(--input-shadow, none);
+    color: var(--color-text);
+    font-size: 13px;
+  }
+  .input::placeholder { color: var(--color-text-muted); }
+</style>
+</head>
+<body>
+  <div class="page-title">BmoAtlas — Theme Previews</div>
+  <div class="page-sub">Mockups only · pick the ones you like and I'll wire them into the real app</div>
+
+  <div class="group-title">Already in the app</div>
+  <div class="grid" id="existing"></div>
+
+  <div class="group-title">Proposed — best fits for a trading app</div>
+  <div class="grid" id="finance"></div>
+
+  <div class="group-title">Proposed — visually distinctive</div>
+  <div class="grid" id="distinct"></div>
+
+  <div class="group-title">Proposed — metallic &amp; shiny (lighter / polished)</div>
+  <div class="grid" id="metallic"></div>
+
+  <div class="group-title">Proposed — popular palettes &amp; more</div>
+  <div class="grid" id="more"></div>
+
+<script>
+  // Each theme = the semantic token set the real :root[data-theme] block would define.
+  const THEMES = {
+    // ── existing ──────────────────────────────────────────────
+    light: { group:'existing', name:'Light', tag:'(default)', vars:{
+      '--color-bg':'#f0f2f5','--color-bg-surface':'#ffffff','--color-text':'#1a1d23',
+      '--color-text-secondary':'#5f6368','--color-text-muted':'#9aa0a6','--color-text-inverse':'#ffffff',
+      '--color-border':'#e1e4e8','--color-primary':'#0075be','--color-gain':'#16a34a','--color-loss':'#cc0000',
+      '--color-success-light':'#dcfce7','--color-danger-light':'#fee2e2',
+      '--toolbar-bg':'#002f6c','--toolbar-text':'#ffffff','--toolbar-border':'rgba(255,255,255,0.15)'}},
+
+    dark: { group:'existing', name:'Dark', tag:'dark', vars:{
+      '--color-bg':'#0f1117','--color-bg-surface':'#1a1d27','--color-text':'#e8eaed',
+      '--color-text-secondary':'#9aa0a6','--color-text-muted':'#5f6368','--color-text-inverse':'#1a1d23',
+      '--color-border':'#3c4049','--color-primary':'#60a5fa','--color-gain':'#4ade80','--color-loss':'#f87171',
+      '--color-success-light':'#14532d','--color-danger-light':'#7f1d1d',
+      '--toolbar-bg':'#111827','--toolbar-text':'#e8eaed','--toolbar-border':'rgba(255,255,255,0.1)'}},
+
+    silver: { group:'existing', name:'Silver', tag:'silver · metallic', vars:{
+      '--color-bg':'#d9dde2','--color-bg-surface':'#f4f6f8','--color-text':'#1c2024',
+      '--color-text-secondary':'#4a5159','--color-text-muted':'#828b94','--color-text-inverse':'#ffffff',
+      '--color-border':'#c2c8cf','--color-primary':'#4d6b8a','--color-gain':'#15803d','--color-loss':'#b91c1c',
+      '--color-success-light':'#dcfce7','--color-danger-light':'#fee2e2',
+      '--toolbar-bg':'repeating-linear-gradient(0deg,rgba(255,255,255,0.04) 0 1px,rgba(0,0,0,0.025) 1px 3px),linear-gradient(180deg,#7b8593 0%,#5a626d 48%,#474e58 100%)',
+      '--toolbar-text':'#f4f6f8','--toolbar-border':'rgba(255,255,255,0.18)',
+      '--btn-primary-bg':'linear-gradient(180deg,#6488a8 0%,#4d6b8a 52%,#3f5a76 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.4),inset 0 -1px 0 rgba(0,0,0,0.2),0 1px 2px rgba(0,0,0,0.1)',
+      '--btn-border':'1px solid rgba(0,0,0,0.18)',
+      '--card-bg':'linear-gradient(180deg,#fcfdfe 0%,#f4f6f8 45%,#e9ecef 100%)',
+      '--card-border':'#c8cdd3',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,0.9),inset 0 -1px 0 rgba(0,0,0,0.06),0 4px 6px -1px rgba(0,0,0,0.15)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.6),inset 0 -1px 0 rgba(0,0,0,0.08)',
+      '--input-bg':'linear-gradient(180deg,#e6e9ed 0%,#f1f3f5 100%)','--input-border':'#b9bfc6',
+      '--input-shadow':'inset 0 1px 2px rgba(0,0,0,0.12),inset 0 -1px 0 rgba(255,255,255,0.7)'}},
+
+    midnight: { group:'existing', name:'Midnight', tag:'midnight', vars:{
+      '--color-bg':'#050b1a','--color-bg-surface':'#0b1428','--color-text':'#dde6f5',
+      '--color-text-secondary':'#9fb0cc','--color-text-muted':'#5d6f8f','--color-text-inverse':'#050b1a',
+      '--color-border':'#1c2a4a','--color-primary':'#5b8def','--color-gain':'#34d399','--color-loss':'#f87171',
+      '--color-success-light':'#064e3b','--color-danger-light':'#7f1d1d',
+      '--toolbar-bg':'#030713','--toolbar-text':'#dde6f5','--toolbar-border':'rgba(91,141,239,0.15)'}},
+
+    // ── proposed: finance ─────────────────────────────────────
+    terminal: { group:'finance', name:'Terminal', tag:'high-contrast dark', vars:{
+      '--color-bg':'#06080d','--color-bg-surface':'#0e1117','--color-text':'#d9e0e8',
+      '--color-text-secondary':'#8a93a0','--color-text-muted':'#5a626e','--color-text-inverse':'#06080d',
+      '--color-border':'#1b2230','--color-primary':'#f5a623','--color-gain':'#26d367','--color-loss':'#ff4d4d',
+      '--color-success-light':'#0d2e1a','--color-danger-light':'#3a0f0f',
+      '--toolbar-bg':'#03040a','--toolbar-text':'#f5a623','--toolbar-border':'rgba(245,166,35,0.2)'}},
+
+    slate: { group:'finance', name:'Slate', tag:'soft light', vars:{
+      '--color-bg':'#eceae6','--color-bg-surface':'#f7f6f3','--color-text':'#2a2d34',
+      '--color-text-secondary':'#5c6068','--color-text-muted':'#9a9da4','--color-text-inverse':'#ffffff',
+      '--color-border':'#d8d5cf','--color-primary':'#4a5b7a','--color-gain':'#2f7d4f','--color-loss':'#b1473f',
+      '--color-success-light':'#dceadf','--color-danger-light':'#f3dedb',
+      '--toolbar-bg':'#3a4254','--toolbar-text':'#f3f2ef','--toolbar-border':'rgba(255,255,255,0.12)'}},
+
+    brand: { group:'finance', name:'BMO Brand', tag:'navy-forward light', vars:{
+      '--color-bg':'#eef4fa','--color-bg-surface':'#ffffff','--color-text':'#0a1f3c',
+      '--color-text-secondary':'#3f5572','--color-text-muted':'#8aa0bd','--color-text-inverse':'#ffffff',
+      '--color-border':'#cfe0f0','--color-primary':'#0075be','--color-gain':'#16a34a','--color-loss':'#cc0000',
+      '--color-success-light':'#dcfce7','--color-danger-light':'#fee2e2',
+      '--card-border':'#bcd6ee',
+      '--toolbar-bg':'#002f6c','--toolbar-text':'#ffffff','--toolbar-border':'rgba(255,255,255,0.18)'}},
+
+    // ── proposed: distinctive ─────────────────────────────────
+    solarized: { group:'distinct', name:'Solarized', tag:'light', vars:{
+      '--color-bg':'#fdf6e3','--color-bg-surface':'#eee8d5','--color-text':'#586e75',
+      '--color-text-secondary':'#657b83','--color-text-muted':'#93a1a1','--color-text-inverse':'#fdf6e3',
+      '--color-border':'#ddd6c1','--color-primary':'#268bd2','--color-gain':'#859900','--color-loss':'#dc322f',
+      '--color-success-light':'#eaeccf','--color-danger-light':'#f7dcd0',
+      '--toolbar-bg':'#073642','--toolbar-text':'#eee8d5','--toolbar-border':'rgba(255,255,255,0.1)'}},
+
+    emerald: { group:'distinct', name:'Emerald', tag:'dark', vars:{
+      '--color-bg':'#0d1410','--color-bg-surface':'#13201a','--color-text':'#d6e6dc',
+      '--color-text-secondary':'#88a896','--color-text-muted':'#566b5e','--color-text-inverse':'#0d1410',
+      '--color-border':'#1f3328','--color-primary':'#10b981','--color-gain':'#34d399','--color-loss':'#f87171',
+      '--color-success-light':'#0c3325','--color-danger-light':'#3a1717',
+      '--toolbar-bg':'#08110c','--toolbar-text':'#d6e6dc','--toolbar-border':'rgba(16,185,129,0.18)'}},
+
+    rosegold: { group:'distinct', name:'Rose Gold', tag:'warm metallic', vars:{
+      '--color-bg':'#efe7e2','--color-bg-surface':'#fbf5f1','--color-text':'#3a2e28',
+      '--color-text-secondary':'#6e5a4f','--color-text-muted':'#a8938a','--color-text-inverse':'#ffffff',
+      '--color-border':'#dcc8bd','--color-primary':'#a9776a','--color-gain':'#2f7d4f','--color-loss':'#b1473f',
+      '--color-success-light':'#e2ecdf','--color-danger-light':'#f3dedb',
+      '--toolbar-bg':'repeating-linear-gradient(0deg,rgba(255,255,255,0.05) 0 1px,rgba(0,0,0,0.03) 1px 3px),linear-gradient(180deg,#c2a191 0%,#a07f70 48%,#8a6a5c 100%)',
+      '--toolbar-text':'#fbf3ee','--toolbar-border':'rgba(255,255,255,0.2)',
+      '--btn-primary-bg':'linear-gradient(180deg,#c89a86 0%,#a9776a 52%,#915f53 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.2),0 1px 2px rgba(0,0,0,0.12)',
+      '--btn-border':'1px solid rgba(0,0,0,0.16)',
+      '--card-bg':'linear-gradient(180deg,#fffaf7 0%,#fbf5f1 45%,#f1e6df 100%)',
+      '--card-border':'#e2d0c6',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,0.9),inset 0 -1px 0 rgba(0,0,0,0.05),0 4px 6px -1px rgba(120,80,60,0.18)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.6),inset 0 -1px 0 rgba(0,0,0,0.07)',
+      '--input-bg':'linear-gradient(180deg,#efe2da 0%,#f7ede7 100%)','--input-border':'#d3bcb0',
+      '--input-shadow':'inset 0 1px 2px rgba(90,60,45,0.14),inset 0 -1px 0 rgba(255,255,255,0.7)'}},
+
+    sepia: { group:'distinct', name:'Sepia / Paper', tag:'reading mode', vars:{
+      '--color-bg':'#f4ecd8','--color-bg-surface':'#faf4e4','--color-text':'#4a3f2f',
+      '--color-text-secondary':'#6f614a','--color-text-muted':'#a3937a','--color-text-inverse':'#faf4e4',
+      '--color-border':'#ddd0b0','--color-primary':'#8a6d3b','--color-gain':'#5b7a2f','--color-loss':'#a8472f',
+      '--color-success-light':'#e8e6c8','--color-danger-light':'#f1ddd0',
+      '--toolbar-bg':'#5c4a2f','--toolbar-text':'#f4ecd8','--toolbar-border':'rgba(255,255,255,0.12)'}},
+
+    // ── proposed: metallic & shiny ────────────────────────────
+    // "Shiny" ingredients vs. matte Silver: (1) a hard two-tone reflection
+    // line mid-gradient, (2) a diagonal specular glare streak layered on top,
+    // (3) brighter inset bevels. Light metal → dark button/inverse text.
+
+    platinum: { group:'metallic', name:'Platinum', tag:'lighter shiny silver', vars:{
+      '--color-bg':'#e7eaee','--color-bg-surface':'#f7f9fb','--color-text':'#20242a',
+      '--color-text-secondary':'#525a63','--color-text-muted':'#8b939c','--color-text-inverse':'#1b1f25',
+      '--color-border':'#cdd3da','--color-primary':'#5a7a9c','--color-gain':'#15803d','--color-loss':'#b91c1c',
+      '--color-success-light':'#dcfce7','--color-danger-light':'#fee2e2',
+      '--toolbar-bg':'linear-gradient(110deg,transparent 38%,rgba(255,255,255,0.45) 47%,transparent 56%),linear-gradient(180deg,#fbfcfd 0%,#dfe4e9 100%)',
+      '--toolbar-text':'#2b323a','--toolbar-border':'rgba(255,255,255,0.6)',
+      '--btn-primary-bg':'linear-gradient(110deg,transparent 40%,rgba(255,255,255,0.5) 48%,transparent 57%),linear-gradient(180deg,#fbfdff 0%,#cdd6df 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.95),inset 0 -1px 0 rgba(0,0,0,0.15),0 1px 3px rgba(0,0,0,0.18)',
+      '--btn-border':'1px solid rgba(0,0,0,0.14)',
+      '--card-bg':'linear-gradient(180deg,#ffffff 0%,#f4f7f9 46%,#e7ecf0 100%)',
+      '--card-border':'#d2d8de',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(0,0,0,0.05),0 6px 12px -4px rgba(0,0,0,0.2)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.8),inset 0 -1px 0 rgba(0,0,0,0.06)',
+      '--input-bg':'linear-gradient(180deg,#e9edf1 0%,#f5f8fa 100%)','--input-border':'#c2c9d1',
+      '--input-shadow':'inset 0 1px 3px rgba(0,0,0,0.13),inset 0 -1px 0 rgba(255,255,255,0.85)',
+      '--btn-text':'#1b1f25'}},
+
+    chrome: { group:'metallic', name:'Chrome', tag:'mirror-polished', vars:{
+      '--color-bg':'#dfe3e8','--color-bg-surface':'#f2f5f8','--color-text':'#1c2127',
+      '--color-text-secondary':'#4d555e','--color-text-muted':'#828a93','--color-text-inverse':'#161a1f',
+      '--color-border':'#c3cad2','--color-primary':'#3f6896','--color-gain':'#15803d','--color-loss':'#b91c1c',
+      '--color-success-light':'#dcfce7','--color-danger-light':'#fee2e2',
+      '--toolbar-bg':'linear-gradient(100deg,transparent 28%,rgba(255,255,255,0.6) 44%,transparent 52%,rgba(255,255,255,0.28) 62%,transparent 72%),linear-gradient(180deg,#fbfdfe 0%,#c8d1da 100%)',
+      '--toolbar-text':'#222931','--toolbar-border':'rgba(255,255,255,0.7)',
+      '--btn-primary-bg':'linear-gradient(100deg,transparent 33%,rgba(255,255,255,0.6) 46%,transparent 58%),linear-gradient(180deg,#ffffff 0%,#b9c3ce 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(0,0,0,0.18),0 2px 4px rgba(0,0,0,0.22)',
+      '--btn-border':'1px solid rgba(0,0,0,0.16)',
+      '--card-bg':'linear-gradient(180deg,#ffffff 0%,#eef2f6 48%,#dde3e9 100%)',
+      '--card-border':'#cbd2d9',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,1),inset 0 -1px 0 rgba(0,0,0,0.06),0 8px 16px -6px rgba(0,0,0,0.25)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.85),inset 0 -1px 0 rgba(0,0,0,0.07)',
+      '--input-bg':'linear-gradient(180deg,#e2e7ec 0%,#f3f6f8 100%)','--input-border':'#bcc4cc',
+      '--input-shadow':'inset 0 1px 3px rgba(0,0,0,0.15),inset 0 -1px 0 rgba(255,255,255,0.9)',
+      '--btn-text':'#161a1f'}},
+
+    titanium: { group:'metallic', name:'Titanium', tag:'cool dark metal', vars:{
+      '--color-bg':'#3a4047','--color-bg-surface':'#454c54','--color-text':'#eef1f4',
+      '--color-text-secondary':'#c0c7cf','--color-text-muted':'#8b939c','--color-text-inverse':'#1b1f25',
+      '--color-border':'#5a626b','--color-primary':'#7fa6cc','--color-gain':'#5fd08a','--color-loss':'#ff8a8a',
+      '--color-success-light':'#2c4636','--color-danger-light':'#4a2c2c',
+      '--toolbar-bg':'linear-gradient(110deg,transparent 40%,rgba(255,255,255,0.22) 48%,transparent 56%),linear-gradient(180deg,#5b636c 0%,#3a4148 100%)',
+      '--toolbar-text':'#eef1f4','--toolbar-border':'rgba(255,255,255,0.14)',
+      '--btn-primary-bg':'linear-gradient(110deg,transparent 40%,rgba(255,255,255,0.28) 48%,transparent 56%),linear-gradient(180deg,#6c7882 0%,#454d57 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.45),inset 0 -1px 0 rgba(0,0,0,0.3),0 2px 4px rgba(0,0,0,0.35)',
+      '--btn-border':'1px solid rgba(0,0,0,0.3)',
+      '--card-bg':'linear-gradient(180deg,#4d545c 0%,#434a52 48%,#3b424a 100%)',
+      '--card-border':'#5c646d',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,0.18),inset 0 -1px 0 rgba(0,0,0,0.25),0 8px 16px -6px rgba(0,0,0,0.5)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.15),inset 0 -1px 0 rgba(0,0,0,0.25)',
+      '--input-bg':'linear-gradient(180deg,#373d44 0%,#414851 100%)','--input-border':'#565e67',
+      '--input-shadow':'inset 0 1px 3px rgba(0,0,0,0.4),inset 0 -1px 0 rgba(255,255,255,0.12)',
+      '--btn-text':'#eef1f4'}},
+
+    gold: { group:'metallic', name:'Brushed Gold', tag:'shiny champagne', vars:{
+      '--color-bg':'#efe9da','--color-bg-surface':'#fbf7ec','--color-text':'#332a16',
+      '--color-text-secondary':'#6b5d3c','--color-text-muted':'#a89773','--color-text-inverse':'#2a230f',
+      '--color-border':'#ddceac','--color-primary':'#b08a3e','--color-gain':'#5b7a2f','--color-loss':'#a8472f',
+      '--color-success-light':'#e8e6c8','--color-danger-light':'#f1ddd0',
+      '--toolbar-bg':'linear-gradient(110deg,transparent 38%,rgba(255,255,255,0.55) 47%,transparent 55%),linear-gradient(180deg,#e6cf94 0%,#c9aa5f 47%,#ad8c43 50%,#d3b46c 53%,#b8964c 100%)',
+      '--toolbar-text':'#3a2f12','--toolbar-border':'rgba(255,255,255,0.45)',
+      '--btn-primary-bg':'linear-gradient(110deg,transparent 40%,rgba(255,255,255,0.6) 48%,transparent 56%),linear-gradient(180deg,#e6d49a 0%,#c9a85a 47%,#b08a3e 50%,#cdac5f 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(80,55,10,0.3),0 2px 4px rgba(80,55,10,0.25)',
+      '--btn-border':'1px solid rgba(90,65,15,0.35)',
+      '--card-bg':'linear-gradient(180deg,#fffdf4 0%,#f7f1e0 46%,#ece2c8 100%)',
+      '--card-border':'#e0d2af',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,0.95),inset 0 -1px 0 rgba(120,90,30,0.08),0 6px 12px -4px rgba(120,90,30,0.22)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(120,90,30,0.1)',
+      '--input-bg':'linear-gradient(180deg,#ece2c8 0%,#f6efdc 100%)','--input-border':'#d4c39c',
+      '--input-shadow':'inset 0 1px 3px rgba(90,65,15,0.16),inset 0 -1px 0 rgba(255,255,255,0.8)',
+      '--btn-text':'#2a230f'}},
+
+    // ── proposed: popular palettes & more ─────────────────────
+    nord: { group:'more', name:'Nord', tag:'arctic dark', vars:{
+      '--color-bg':'#2e3440','--color-bg-surface':'#3b4252','--color-text':'#eceff4',
+      '--color-text-secondary':'#d8dee9','--color-text-muted':'#7b88a1','--color-text-inverse':'#2e3440',
+      '--color-border':'#434c5e','--color-primary':'#88c0d0','--color-gain':'#a3be8c','--color-loss':'#bf616a',
+      '--color-success-light':'#3b4a3a','--color-danger-light':'#4a3536',
+      '--toolbar-bg':'#242933','--toolbar-text':'#eceff4','--toolbar-border':'rgba(216,222,233,0.1)'}},
+
+    dracula: { group:'more', name:'Dracula', tag:'dark purple', vars:{
+      '--color-bg':'#282a36','--color-bg-surface':'#343746','--color-text':'#f8f8f2',
+      '--color-text-secondary':'#bdbecf','--color-text-muted':'#6272a4','--color-text-inverse':'#282a36',
+      '--color-border':'#44475a','--color-primary':'#bd93f9','--color-gain':'#50fa7b','--color-loss':'#ff5555',
+      '--color-success-light':'#1f3b27','--color-danger-light':'#4a2326',
+      '--toolbar-bg':'#21222c','--toolbar-text':'#f8f8f2','--toolbar-border':'rgba(189,147,249,0.18)'}},
+
+    tokyonight: { group:'more', name:'Tokyo Night', tag:'dark blue-violet', vars:{
+      '--color-bg':'#1a1b26','--color-bg-surface':'#24283b','--color-text':'#c0caf5',
+      '--color-text-secondary':'#9aa5ce','--color-text-muted':'#565f89','--color-text-inverse':'#1a1b26',
+      '--color-border':'#2f334d','--color-primary':'#7aa2f7','--color-gain':'#9ece6a','--color-loss':'#f7768e',
+      '--color-success-light':'#233a2e','--color-danger-light':'#3d2730',
+      '--toolbar-bg':'#16161e','--toolbar-text':'#c0caf5','--toolbar-border':'rgba(122,162,247,0.16)'}},
+
+    catppuccin: { group:'more', name:'Catppuccin Mocha', tag:'dark pastel', vars:{
+      '--color-bg':'#1e1e2e','--color-bg-surface':'#313244','--color-text':'#cdd6f4',
+      '--color-text-secondary':'#a6adc8','--color-text-muted':'#6c7086','--color-text-inverse':'#1e1e2e',
+      '--color-border':'#45475a','--color-primary':'#89b4fa','--color-gain':'#a6e3a1','--color-loss':'#f38ba8',
+      '--color-success-light':'#2a3a2e','--color-danger-light':'#3f2730',
+      '--toolbar-bg':'#181825','--toolbar-text':'#cdd6f4','--toolbar-border':'rgba(137,180,250,0.16)'}},
+
+    gruvbox: { group:'more', name:'Gruvbox', tag:'warm retro dark', vars:{
+      '--color-bg':'#282828','--color-bg-surface':'#3c3836','--color-text':'#ebdbb2',
+      '--color-text-secondary':'#d5c4a1','--color-text-muted':'#a89984','--color-text-inverse':'#282828',
+      '--color-border':'#504945','--color-primary':'#83a598','--color-gain':'#b8bb26','--color-loss':'#fb4934',
+      '--color-success-light':'#33401f','--color-danger-light':'#442a26',
+      '--toolbar-bg':'#1d2021','--toolbar-text':'#ebdbb2','--toolbar-border':'rgba(235,219,178,0.12)'}},
+
+    sage: { group:'more', name:'Sage', tag:'soft green light', vars:{
+      '--color-bg':'#eef0ea','--color-bg-surface':'#f8f9f5','--color-text':'#2b3328',
+      '--color-text-secondary':'#5a6453','--color-text-muted':'#97a08d','--color-text-inverse':'#ffffff',
+      '--color-border':'#d6dccb','--color-primary':'#5a7d52','--color-gain':'#3f7d3f','--color-loss':'#b1473f',
+      '--color-success-light':'#dde8d6','--color-danger-light':'#f3dedb',
+      '--toolbar-bg':'#3a4a36','--toolbar-text':'#f0f3ec','--toolbar-border':'rgba(255,255,255,0.12)'}},
+
+    contrast: { group:'more', name:'High Contrast', tag:'accessibility dark', vars:{
+      '--color-bg':'#000000','--color-bg-surface':'#0c0c0c','--color-text':'#ffffff',
+      '--color-text-secondary':'#d4d4d4','--color-text-muted':'#a0a0a0','--color-text-inverse':'#000000',
+      '--color-border':'#5a5a5a','--color-primary':'#4cc2ff','--color-gain':'#3ff23f','--color-loss':'#ff5050',
+      '--color-success-light':'#0a2a0a','--color-danger-light':'#2a0a0a',
+      '--toolbar-bg':'#000000','--toolbar-text':'#ffffff','--toolbar-border':'rgba(255,255,255,0.45)'}},
+
+    copper: { group:'more', name:'Copper', tag:'warm metallic', vars:{
+      '--color-bg':'#efe6df','--color-bg-surface':'#fbf4ee','--color-text':'#3a2a1f',
+      '--color-text-secondary':'#6e5343','--color-text-muted':'#a8917f','--color-text-inverse':'#ffffff',
+      '--color-border':'#ddc8b8','--color-primary':'#a86b43','--color-gain':'#5b7a2f','--color-loss':'#a8472f',
+      '--color-success-light':'#e2ecdf','--color-danger-light':'#f3dedb',
+      '--toolbar-bg':'linear-gradient(110deg,transparent 38%,rgba(255,255,255,0.4) 47%,transparent 56%),linear-gradient(180deg,#c08a5e 0%,#8f5e3b 100%)',
+      '--toolbar-text':'#fbf2ea','--toolbar-border':'rgba(255,255,255,0.18)',
+      '--btn-primary-bg':'linear-gradient(110deg,transparent 40%,rgba(255,255,255,0.45) 48%,transparent 57%),linear-gradient(180deg,#c4895c 0%,#9a6238 100%)',
+      '--btn-shadow':'inset 0 1px 0 rgba(255,255,255,0.5),inset 0 -1px 0 rgba(60,30,10,0.3),0 2px 4px rgba(60,30,10,0.25)',
+      '--btn-border':'1px solid rgba(60,30,10,0.3)',
+      '--card-bg':'linear-gradient(180deg,#fffaf5 0%,#f6ece2 46%,#ecdccd 100%)',
+      '--card-border':'#e2cdba',
+      '--card-shadow':'inset 0 1px 0 rgba(255,255,255,0.9),inset 0 -1px 0 rgba(90,50,20,0.07),0 6px 12px -4px rgba(90,50,20,0.2)',
+      '--badge-shadow':'inset 0 1px 0 rgba(255,255,255,0.6),inset 0 -1px 0 rgba(90,50,20,0.1)',
+      '--input-bg':'linear-gradient(180deg,#ecdccd 0%,#f6ece2 100%)','--input-border':'#d6bca6',
+      '--input-shadow':'inset 0 1px 3px rgba(70,40,15,0.15),inset 0 -1px 0 rgba(255,255,255,0.75)',
+      '--btn-text':'#fbf2ea'}},
+  };
+
+  function panel(key, t) {
+    const style = Object.entries(t.vars).map(([k,v]) => `${k}:${v}`).join(';');
+    return `
+      <div class="theme" style="${style}">
+        <div class="label"><span>${t.name}</span><span class="tag">${t.tag}</span></div>
+        <div class="toolbar">
+          <span class="brand">BMO · Capital Markets</span>
+          <span class="icons">🔔 ⚙ 👤</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <h3>AAPL · Apple Inc.</h3>
+            <div class="muted">NASDAQ · Real-time quote</div>
+            <div class="row">
+              <span class="num">$192.43</span>
+              <span class="badge badge-gain">▲ 1.82%</span>
+              <span class="badge badge-loss">▼ 0.44%</span>
+            </div>
+            <div class="row">
+              <button class="btn btn-primary">Buy</button>
+              <button class="btn btn-outline">Watchlist</button>
+            </div>
+            <input class="input" placeholder="Search ticker…">
+          </div>
+        </div>
+      </div>`;
+  }
+
+  for (const [key, t] of Object.entries(THEMES)) {
+    document.getElementById(t.group).insertAdjacentHTML('beforeend', panel(key, t));
+  }
+</script>
+</body>
+</html>

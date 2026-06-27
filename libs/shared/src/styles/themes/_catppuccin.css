@@ -1,0 +1,52 @@
+/* ── Catppuccin Mocha Theme — dark pastel ──────────────────── */
+:root[data-theme="catppuccin"] {
+  color-scheme: dark;
+
+  --color-bg:          #1e1e2e;
+  --color-bg-surface:  #313244;
+  --color-bg-elevated: #45475a;
+  --color-bg-muted:    #292a3d;
+
+  --color-text:          #cdd6f4;
+  --color-text-secondary: #a6adc8;
+  --color-text-muted:    #6c7086;
+  --color-text-inverse:  #1e1e2e;
+
+  --color-border:       #45475a;
+  --color-border-focus: #89b4fa;
+
+  --color-primary:       #89b4fa;
+  --color-primary-hover: #74a0f0;
+  --color-primary-light: #243047;
+
+  --color-success:       #a6e3a1;
+  --color-success-light: #2a3a2e;
+  --color-danger:        #f38ba8;
+  --color-danger-light:  #3f2730;
+  --color-warning:       #f9e2af;
+  --color-warning-light: #45402a;
+  --color-info:          #89dceb;
+  --color-info-light:    #1d3a40;
+
+  --color-gain:  #a6e3a1;
+  --color-loss:  #f38ba8;
+
+  --color-accent: #89b4fa;
+
+  --toolbar-bg:          #181825;
+  --toolbar-bg-secondary: #1e1e2e;
+  --toolbar-text:        #cdd6f4;
+  --toolbar-text-muted:  rgba(205, 214, 244, 0.6);
+  --toolbar-border:      rgba(137, 180, 250, 0.16);
+
+  --sidemenu-bg:         #181825;
+  --sidemenu-text:       rgba(205, 214, 244, 0.62);
+  --sidemenu-text-hover: #cdd6f4;
+  --sidemenu-active-bg:  rgba(137, 180, 250, 0.16);
+  --sidemenu-border:     rgba(137, 180, 250, 0.1);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

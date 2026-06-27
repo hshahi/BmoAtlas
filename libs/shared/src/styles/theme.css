@@ -10,6 +10,20 @@
 /* Design tokens (not in a layer — always available) */
 @import './_tokens.css';
 
+/* Theme palettes — each overrides tokens via :root[data-theme="…"].
+   Order is irrelevant (only one is active at a time); keep alphabetical. */
+@import './themes/_catppuccin.css';
+@import './themes/_chrome.css';
+@import './themes/_dark.css';
+@import './themes/_dracula.css';
+@import './themes/_high-contrast.css';
+@import './themes/_midnight.css';
+@import './themes/_nord.css';
+@import './themes/_platinum.css';
+@import './themes/_silver.css';
+@import './themes/_titanium.css';
+@import './themes/_tokyo-night.css';
+
 /* Layered styles */
 @import './_reset.css';
 @import './_base.css';

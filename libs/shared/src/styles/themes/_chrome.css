@@ -1,0 +1,83 @@
+/* ── Chrome Theme — mirror-polished metal ──────────────────────
+   The flashiest metal: layered specular glare highlights over a clean
+   bright steel gradient. Light metal → dark button text. ───────── */
+:root[data-theme="chrome"] {
+  color-scheme: light;
+
+  --color-bg:          #dfe3e8;
+  --color-bg-surface:  #f2f5f8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted:    #d6dce2;
+
+  --color-text:          #1c2127;
+  --color-text-secondary: #4d555e;
+  --color-text-muted:    #828a93;
+  --color-text-inverse:  #ffffff;
+
+  --color-border:       #c3cad2;
+  --color-border-focus: #3f6896;
+
+  --color-primary:       #3f6896;
+  --color-primary-hover: #2f5078;
+  --color-primary-light: #dde7f1;
+
+  --color-success:       #15803d;
+  --color-success-light: #dcfce7;
+  --color-danger:        #b91c1c;
+  --color-danger-light:  #fee2e2;
+  --color-warning:       #b45309;
+  --color-warning-light: #fef3c7;
+  --color-info:          #3f6896;
+  --color-info-light:    #dde7f1;
+
+  --color-gain:  #15803d;
+  --color-loss:  #b91c1c;
+
+  --color-accent: #5f86b0;
+
+  /* Mirror finish: layered diagonal glare highlights over a clean bright steel
+     gradient that only ever darkens top→bottom (no mid-band of any kind). */
+  --toolbar-bg:
+    linear-gradient(100deg, transparent 28%, rgba(255, 255, 255, 0.6) 44%, transparent 52%, rgba(255, 255, 255, 0.28) 62%, transparent 72%),
+    linear-gradient(180deg, #fbfdfe 0%, #c8d1da 100%);
+  --toolbar-bg-secondary: linear-gradient(180deg, #eaeff3 0%, #cfd7df 100%);
+  --toolbar-text:        #222931;
+  --toolbar-text-muted:  rgba(34, 41, 49, 0.6);
+  --toolbar-border:      rgba(255, 255, 255, 0.7);
+
+  --sidemenu-bg:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.7) 0, transparent 4px),
+    linear-gradient(180deg, #f0f4f8 0%, #d6dee5 50%, #bfc9d2 100%);
+  --sidemenu-text:       rgba(28, 33, 39, 0.62);
+  --sidemenu-text-hover: #1c2127;
+  --sidemenu-active-bg:  rgba(63, 104, 150, 0.16);
+  --sidemenu-border:     rgba(0, 0, 0, 0.1);
+
+  /* Metallic component surfaces */
+  --btn-primary-text:    #161a1f;
+  --btn-primary-bg:
+    linear-gradient(100deg, transparent 33%, rgba(255, 255, 255, 0.6) 46%, transparent 58%),
+    linear-gradient(180deg, #ffffff 0%, #b9c3ce 100%);
+  --btn-primary-bg-hover:
+    linear-gradient(100deg, transparent 33%, rgba(255, 255, 255, 0.7) 46%, transparent 58%),
+    linear-gradient(180deg, #ffffff 0%, #aeb9c6 100%);
+  --btn-primary-border:        1px solid rgba(0, 0, 0, 0.16);
+  --btn-primary-shadow:        inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.18), var(--shadow-md);
+  --btn-primary-active-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+
+  --card-bg:     linear-gradient(180deg, #ffffff 0%, #eef2f6 48%, #dde3e9 100%);
+  --card-border: #cbd2d9;
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.06), var(--shadow-lg);
+
+  --badge-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.07);
+
+  --input-bg:           linear-gradient(180deg, #e2e7ec 0%, #f3f6f8 100%);
+  --input-border:       #bcc4cc;
+  --input-shadow:       inset 0 1px 3px rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(255, 255, 255, 0.9);
+  --input-focus-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15), 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 25%, transparent);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.12);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.18), 0 2px 4px -2px rgb(0 0 0 / 0.14);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.2), 0 4px 6px -4px rgb(0 0 0 / 0.14);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.2), 0 8px 10px -6px rgb(0 0 0 / 0.14);
+}

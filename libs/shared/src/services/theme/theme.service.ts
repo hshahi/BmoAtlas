@@ -1,9 +1,17 @@
 import { Injectable, signal, effect, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
-export type Theme = 'light' | 'dark';
+export type Theme =
+  | 'light' | 'dark' | 'silver' | 'midnight' | 'platinum' | 'chrome' | 'titanium'
+  | 'nord' | 'dracula' | 'tokyo-night' | 'high-contrast' | 'catppuccin';
 
 const STORAGE_KEY = 'bmo-atlas-theme';
+
+/** All selectable themes, in toggle-cycle order. */
+const THEMES: readonly Theme[] = [
+  'light', 'dark', 'silver', 'midnight', 'platinum', 'chrome', 'titanium',
+  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin',
+];
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -22,9 +30,10 @@ export class ThemeService {
     });
   }
 
-  /** Toggle between light and dark. */
+  /** Cycle to the next theme (light → dark → silver → midnight → light). */
   toggle(): void {
-    const next: Theme = this.resolved() === 'light' ? 'dark' : 'light';
+    const current = THEMES.indexOf(this.resolved());
+    const next = THEMES[(current + 1) % THEMES.length];
     this.resolved.set(next);
     this.savePreference(next);
   }
@@ -43,8 +52,8 @@ export class ThemeService {
   private loadPreference(): Theme {
     if (!this.isBrowser) return 'dark';
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'light' || stored === 'dark') {
-      return stored;
+    if (stored && (THEMES as readonly string[]).includes(stored)) {
+      return stored as Theme;
     }
     return 'dark';
   }

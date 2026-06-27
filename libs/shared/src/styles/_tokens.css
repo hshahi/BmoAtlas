@@ -1,6 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════════
    Design Tokens — BmoAtlas
    BMO Capital Markets color scheme
+
+   This file holds the PRIMITIVE tokens (typography, spacing, radii,
+   brand colours, etc.) and the default LIGHT theme on :root.
+
+   Each alternate theme lives in its own file under ./themes/ and is
+   imported by theme.css after this file. To add a theme: create
+   ./themes/_<name>.css with a :root[data-theme="<name>"] block, then
+   add one @import line to theme.css.
    ═══════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -96,6 +104,12 @@
   --color-primary-hover: var(--bmo-navy-light);
   --color-primary-light: var(--bmo-blue-pale);
 
+  /* Primary button fill — a token so themes can swap a flat colour for a
+     gradient without affecting borders, focus rings, or color-mix() usages
+     that also consume --color-primary. Defaults to the flat primary colour. */
+  --btn-primary-bg:       var(--color-primary);
+  --btn-primary-bg-hover: var(--color-primary-hover);
+
   --color-success:       #16a34a;
   --color-success-light: #dcfce7;
   --color-danger:        var(--bmo-red);
@@ -150,58 +164,4 @@
   --color-accent: #38bdf8;
 
   color-scheme: light;
-}
-
-/* ── Dark Theme — applied via data-theme attribute ─────────── */
-:root[data-theme="dark"] {
-  color-scheme: dark;
-
-  --color-bg:          #0f1117;
-  --color-bg-surface:  #1a1d27;
-  --color-bg-elevated: #242836;
-  --color-bg-muted:    #2a2e3d;
-
-  --color-text:          #e8eaed;
-  --color-text-secondary: #9aa0a6;
-  --color-text-muted:    #5f6368;
-  --color-text-inverse:  #1a1d23;
-
-  --color-border:       #3c4049;
-  --color-border-focus: #60a5fa;
-
-  --color-primary:       #60a5fa;
-  --color-primary-hover: #3b82f6;
-  --color-primary-light: #1e3a5f;
-
-  --color-success:       #4ade80;
-  --color-success-light: #14532d;
-  --color-danger:        #f87171;
-  --color-danger-light:  #7f1d1d;
-  --color-warning:       #fbbf24;
-  --color-warning-light: #78350f;
-  --color-info:          #22d3ee;
-  --color-info-light:    #164e63;
-
-  --color-gain:  #4ade80;
-  --color-loss:  #f87171;
-
-  /* Accent color for loader arcs — brighter in dark mode */
-  --color-accent: #7dd3fc;
-
-  --toolbar-bg:          #111827;
-  --toolbar-bg-secondary: #1f2937;
-  --toolbar-text:        #e8eaed;
-  --toolbar-text-muted:  rgba(255, 255, 255, 0.5);
-  --toolbar-border:      rgba(255, 255, 255, 0.1);
-
-  --sidemenu-bg:         #111827;
-  --sidemenu-text:       rgba(255, 255, 255, 0.6);
-  --sidemenu-text-hover: #e8eaed;
-  --sidemenu-active-bg:  rgba(255, 255, 255, 0.08);
-  --sidemenu-border:     rgba(255, 255, 255, 0.06);
-
-  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
 }

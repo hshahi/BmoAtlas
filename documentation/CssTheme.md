@@ -41,18 +41,36 @@ BmoAtlas uses a **token-driven, layered CSS architecture** shared across the she
 ```
 libs/shared/src/styles/
 ├── theme.css            ← Entry point (import this in each app)
-├── _tokens.css          ← Design tokens (CSS custom properties)
+├── _tokens.css          ← Primitive tokens + default LIGHT theme on :root
 ├── _reset.css           ← Browser reset
 ├── _base.css            ← Body defaults consuming tokens
 ├── _layout.css          ← Page grid, containers
 ├── _components.css      ← Reusable component classes (.card, .btn, .form-*)
-└── _utilities.css       ← Utility classes (.sr-only, .text-gain, .font-bold)
+├── _utilities.css       ← Utility classes (.sr-only, .text-gain, .font-bold)
+└── themes/              ← One file per alternate theme (:root[data-theme="…"])
+    ├── _dark.css
+    ├── _silver.css
+    ├── _midnight.css
+    ├── _platinum.css
+    ├── _chrome.css
+    ├── _titanium.css
+    ├── _nord.css
+    ├── _dracula.css
+    ├── _tokyo-night.css
+    ├── _high-contrast.css
+    └── _catppuccin.css
 
 libs/shared/src/services/theme/
 └── theme.service.ts     ← Angular service for runtime theme toggle + persistence
 ```
 
 Files prefixed with `_` are **partials** — they are never imported directly by apps. Only `theme.css` is imported.
+
+### Adding a new theme
+
+1. Create `themes/_<name>.css` containing a single `:root[data-theme="<name>"] { … }` block that overrides the semantic tokens (and, for a metallic look, the `--card-*` / `--btn-primary-*` / `--input-*` tokens).
+2. Add one `@import './themes/_<name>.css';` line to `theme.css`.
+3. Register `<name>` in `THEMES` (and the `Theme` union) in `theme.service.ts`, add a toolbar icon case, a Settings button, and the `index.html` FOUC allow-lists.
 
 ---
 
@@ -473,9 +491,28 @@ Design tokens are the **single source of truth** for all visual values. They are
 
 ---
 
-## Dark Theme — `data-theme` Attribute
+## Themes — `data-theme` Attribute
 
-The dark theme is implemented by overriding semantic tokens on `:root[data-theme="dark"]`:
+BmoAtlas ships **twelve themes**, all driven by the `data-theme` attribute on `<html>`:
+
+| Theme | `data-theme` value | `color-scheme` | Character |
+|-------|--------------------|----------------|-----------|
+| Light | _(none / default)_ | light | Default BMO light palette |
+| Dark | `dark` | dark | Near-black slate |
+| Silver | `silver` | light | Matte brushed-metal greys with a steel-blue primary |
+| Midnight | `midnight` | dark | Deep midnight-blue surfaces with a bright blue primary |
+| Platinum | `platinum` | light | Lighter, polished silver with a specular sheen |
+| Chrome | `chrome` | light | Mirror-polished metal, high-contrast reflections |
+| Titanium | `titanium` | dark | Cool dark brushed metal with a steel-blue accent |
+| Nord | `nord` | dark | Arctic blue-grey palette |
+| Dracula | `dracula` | dark | Dark with a purple primary |
+| Tokyo Night | `tokyo-night` | dark | Deep blue-violet |
+| High Contrast | `high-contrast` | dark | Pure-black, maximum-legibility accessibility theme |
+| Catppuccin | `catppuccin` | dark | Soft dark pastel (Mocha) |
+
+The four metallic themes (Silver, Platinum, Chrome, Titanium) share a token-driven treatment: `--card-*`, `--btn-primary-*`, `--badge-shadow`, and `--input-*` tokens (defined in [_components.css](../libs/shared/src/styles/_components.css) with flat fallbacks) let each theme render raised, beveled buttons/cards/badges and recessed inputs without per-theme selectors. The "shiny" themes add a diagonal specular glare streak over a clean top→bottom gradient.
+
+Each non-default theme is implemented by overriding semantic tokens on its own `:root[data-theme="…"]` block. For example, the dark theme:
 
 ```css
 :root[data-theme="dark"] {
@@ -562,7 +599,13 @@ In a micro-frontend architecture, each MFE can be loaded independently (e.g., du
 ```typescript
 // libs/shared/src/services/theme/theme.service.ts
 
+export type Theme = 'light' | 'dark' | 'silver' | 'midnight';
+
 const STORAGE_KEY = 'bmo-atlas-theme';
+const THEMES: readonly Theme[] = [
+  'light', 'dark', 'silver', 'midnight', 'platinum', 'chrome', 'titanium',
+  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin',
+];
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
@@ -575,8 +618,10 @@ export class ThemeService {
     });
   }
 
+  // Cycles through every theme in THEMES order, wrapping back to the first
   toggle(): void {
-    const next: Theme = this.resolved() === 'light' ? 'dark' : 'light';
+    const current = THEMES.indexOf(this.resolved());
+    const next = THEMES[(current + 1) % THEMES.length];
     this.resolved.set(next);
     this.savePreference(next);
   }
@@ -587,7 +632,7 @@ export class ThemeService {
 
   private loadPreference(): Theme {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return (stored === 'light' || stored === 'dark') ? stored : 'dark';
+    return THEMES.includes(stored as Theme) ? (stored as Theme) : 'dark';
   }
 
   private savePreference(theme: Theme): void {

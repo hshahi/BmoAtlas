@@ -1,0 +1,82 @@
+/* ── Silver Theme — light, brushed-metal palette ───────────── */
+:root[data-theme="silver"] {
+  color-scheme: light;
+
+  --color-bg:          #d9dde2;
+  --color-bg-surface:  #f4f6f8;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted:    #e4e7ea;
+
+  --color-text:          #1c2024;
+  --color-text-secondary: #4a5159;
+  --color-text-muted:    #828b94;
+  --color-text-inverse:  #ffffff;
+
+  --color-border:       #c2c8cf;
+  --color-border-focus: #4d6b8a;
+
+  --color-primary:       #4d6b8a;
+  --color-primary-hover: #3a5470;
+  --color-primary-light: #dde4ec;
+
+  /* Brushed-metal sheen: light top → mid steel → darker base. */
+  --btn-primary-bg:       linear-gradient(180deg, #6488a8 0%, #4d6b8a 52%, #3f5a76 100%);
+  --btn-primary-bg-hover: linear-gradient(180deg, #557a9a 0%, #41607f 52%, #34506b 100%);
+
+  --color-success:       #15803d;
+  --color-success-light: #dcfce7;
+  --color-danger:        #b91c1c;
+  --color-danger-light:  #fee2e2;
+  --color-warning:       #b45309;
+  --color-warning-light: #fef3c7;
+  --color-info:          #4d6b8a;
+  --color-info-light:    #dde4ec;
+
+  --color-gain:  #15803d;
+  --color-loss:  #b91c1c;
+
+  /* Accent color for loader arcs */
+  --color-accent: #6b8aa8;
+
+  /* Polished-silver bars: a fine brushed-metal texture (horizontal hairlines
+     for the toolbar, vertical for the tall side menu) layered over a top-lit
+     steel gradient. The texture layer sits first so it renders on top. */
+  --toolbar-bg:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, rgba(0, 0, 0, 0.025) 1px 3px),
+    linear-gradient(180deg, #7b8593 0%, #5a626d 48%, #474e58 100%);
+  --toolbar-bg-secondary: linear-gradient(180deg, #6e7884 0%, #545c67 100%);
+  --toolbar-text:        #f4f6f8;
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.7);
+  --toolbar-border:      rgba(255, 255, 255, 0.18);
+
+  --sidemenu-bg:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, rgba(0, 0, 0, 0.02) 1px 3px),
+    linear-gradient(180deg, #6c7682 0%, #525b66 50%, #434a54 100%);
+  --sidemenu-text:       rgba(255, 255, 255, 0.7);
+  --sidemenu-text-hover: #ffffff;
+  --sidemenu-active-bg:  rgba(255, 255, 255, 0.14);
+  --sidemenu-border:     rgba(255, 255, 255, 0.12);
+
+  /* Metallic component surfaces — consumed by _components.css.
+     Raised, beveled buttons/cards/badges; recessed (sunken) inputs. */
+  --btn-primary-border:        1px solid rgba(0, 0, 0, 0.18);
+  --btn-primary-shadow:        inset 0 1px 0 rgba(255, 255, 255, 0.4), inset 0 -1px 0 rgba(0, 0, 0, 0.2), var(--shadow-sm);
+  --btn-primary-active-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.32);
+
+  --card-bg:     linear-gradient(180deg, #fcfdfe 0%, #f4f6f8 45%, #e9ecef 100%);
+  --card-border: #c8cdd3;
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 -1px 0 rgba(0, 0, 0, 0.06), var(--shadow-md);
+
+  --badge-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+
+  --input-bg:           linear-gradient(180deg, #e6e9ed 0%, #f1f3f5 100%);
+  --input-border:       #b9bfc6;
+  --input-shadow:       inset 0 1px 2px rgba(0, 0, 0, 0.12), inset 0 -1px 0 rgba(255, 255, 255, 0.7);
+  --input-focus-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 25%, transparent);
+
+  /* Slightly stronger shadows for definition on the silver background */
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.1);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.15), 0 2px 4px -2px rgb(0 0 0 / 0.12);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.15), 0 4px 6px -4px rgb(0 0 0 / 0.12);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.15), 0 8px 10px -6px rgb(0 0 0 / 0.12);
+}

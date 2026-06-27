@@ -1,0 +1,52 @@
+/* ── High Contrast Theme — accessibility-first dark ────────── */
+:root[data-theme="high-contrast"] {
+  color-scheme: dark;
+
+  --color-bg:          #000000;
+  --color-bg-surface:  #0c0c0c;
+  --color-bg-elevated: #161616;
+  --color-bg-muted:    #1a1a1a;
+
+  --color-text:          #ffffff;
+  --color-text-secondary: #d4d4d4;
+  --color-text-muted:    #a0a0a0;
+  --color-text-inverse:  #000000;
+
+  --color-border:       #6e6e6e;
+  --color-border-focus: #4cc2ff;
+
+  --color-primary:       #4cc2ff;
+  --color-primary-hover: #2bb0f5;
+  --color-primary-light: #06283a;
+
+  --color-success:       #3ff23f;
+  --color-success-light: #0a2a0a;
+  --color-danger:        #ff5050;
+  --color-danger-light:  #2a0a0a;
+  --color-warning:       #ffd400;
+  --color-warning-light: #2a2400;
+  --color-info:          #4cc2ff;
+  --color-info-light:    #06283a;
+
+  --color-gain:  #3ff23f;
+  --color-loss:  #ff5050;
+
+  --color-accent: #4cc2ff;
+
+  --toolbar-bg:          #000000;
+  --toolbar-bg-secondary: #0c0c0c;
+  --toolbar-text:        #ffffff;
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.7);
+  --toolbar-border:      rgba(255, 255, 255, 0.45);
+
+  --sidemenu-bg:         #000000;
+  --sidemenu-text:       rgba(255, 255, 255, 0.72);
+  --sidemenu-text-hover: #ffffff;
+  --sidemenu-active-bg:  rgba(76, 194, 255, 0.22);
+  --sidemenu-border:     rgba(255, 255, 255, 0.3);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}

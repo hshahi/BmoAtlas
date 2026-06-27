@@ -1,0 +1,52 @@
+/* ── Nord Theme — arctic dark ──────────────────────────────── */
+:root[data-theme="nord"] {
+  color-scheme: dark;
+
+  --color-bg:          #2e3440;
+  --color-bg-surface:  #3b4252;
+  --color-bg-elevated: #434c5e;
+  --color-bg-muted:    #39404e;
+
+  --color-text:          #eceff4;
+  --color-text-secondary: #d8dee9;
+  --color-text-muted:    #7b88a1;
+  --color-text-inverse:  #2e3440;
+
+  --color-border:       #434c5e;
+  --color-border-focus: #88c0d0;
+
+  --color-primary:       #88c0d0;
+  --color-primary-hover: #8fbcbb;
+  --color-primary-light: #2b3b40;
+
+  --color-success:       #a3be8c;
+  --color-success-light: #36402c;
+  --color-danger:        #bf616a;
+  --color-danger-light:  #45292c;
+  --color-warning:       #ebcb8b;
+  --color-warning-light: #4a3f24;
+  --color-info:          #81a1c1;
+  --color-info-light:    #2b3845;
+
+  --color-gain:  #a3be8c;
+  --color-loss:  #bf616a;
+
+  --color-accent: #88c0d0;
+
+  --toolbar-bg:          #242933;
+  --toolbar-bg-secondary: #2e3440;
+  --toolbar-text:        #eceff4;
+  --toolbar-text-muted:  rgba(236, 239, 244, 0.6);
+  --toolbar-border:      rgba(216, 222, 233, 0.1);
+
+  --sidemenu-bg:         #242933;
+  --sidemenu-text:       rgba(236, 239, 244, 0.62);
+  --sidemenu-text-hover: #eceff4;
+  --sidemenu-active-bg:  rgba(136, 192, 208, 0.16);
+  --sidemenu-border:     rgba(216, 222, 233, 0.08);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}

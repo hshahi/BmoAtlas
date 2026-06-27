@@ -1,0 +1,83 @@
+/* ── Titanium Theme — cool dark metal ──────────────────────────
+   A dark metallic: brushed blue-grey surfaces with a diagonal glare
+   sheen and beveled, raised components. Dark metal → light button
+   text. Gradients darken top→bottom only (no mid-band). ────────── */
+:root[data-theme="titanium"] {
+  color-scheme: dark;
+
+  --color-bg:          #3a4047;
+  --color-bg-surface:  #454c54;
+  --color-bg-elevated: #4d545c;
+  --color-bg-muted:    #3f464e;
+
+  --color-text:          #eef1f4;
+  --color-text-secondary: #c0c7cf;
+  --color-text-muted:    #8b939c;
+  --color-text-inverse:  #1b1f25;
+
+  --color-border:       #5a626b;
+  --color-border-focus: #7fa6cc;
+
+  --color-primary:       #7fa6cc;
+  --color-primary-hover: #6a93bd;
+  --color-primary-light: #2d3a48;
+
+  --color-success:       #5fd08a;
+  --color-success-light: #2c4636;
+  --color-danger:        #ff8a8a;
+  --color-danger-light:  #4a2c2c;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #4a3a16;
+  --color-info:          #7fa6cc;
+  --color-info-light:    #2d3a48;
+
+  --color-gain:  #5fd08a;
+  --color-loss:  #ff8a8a;
+
+  --color-accent: #9cc0e0;
+
+  /* Brushed dark-metal bars: a diagonal glare streak over a clean gradient. */
+  --toolbar-bg:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.22) 48%, transparent 56%),
+    linear-gradient(180deg, #5b636c 0%, #3a4148 100%);
+  --toolbar-bg-secondary: linear-gradient(180deg, #4e565f 0%, #3c434b 100%);
+  --toolbar-text:        #eef1f4;
+  --toolbar-text-muted:  rgba(238, 241, 244, 0.6);
+  --toolbar-border:      rgba(255, 255, 255, 0.14);
+
+  --sidemenu-bg:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, rgba(0, 0, 0, 0.03) 1px 3px),
+    linear-gradient(180deg, #4a525b 0%, #363c44 100%);
+  --sidemenu-text:       rgba(238, 241, 244, 0.62);
+  --sidemenu-text-hover: #eef1f4;
+  --sidemenu-active-bg:  rgba(127, 166, 204, 0.18);
+  --sidemenu-border:     rgba(255, 255, 255, 0.1);
+
+  /* Metallic component surfaces */
+  --btn-primary-text:    #eef1f4;
+  --btn-primary-bg:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.28) 48%, transparent 56%),
+    linear-gradient(180deg, #6c7882 0%, #454d57 100%);
+  --btn-primary-bg-hover:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.32) 48%, transparent 56%),
+    linear-gradient(180deg, #76828d 0%, #3f4751 100%);
+  --btn-primary-border:        1px solid rgba(0, 0, 0, 0.3);
+  --btn-primary-shadow:        inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -1px 0 rgba(0, 0, 0, 0.3), var(--shadow-sm);
+  --btn-primary-active-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.45);
+
+  --card-bg:     linear-gradient(180deg, #4d545c 0%, #3b424a 100%);
+  --card-border: #5c646d;
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.25), var(--shadow-lg);
+
+  --badge-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+
+  --input-bg:           linear-gradient(180deg, #373d44 0%, #414851 100%);
+  --input-border:       #565e67;
+  --input-shadow:       inset 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+  --input-focus-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 25%, transparent);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.4);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+}
