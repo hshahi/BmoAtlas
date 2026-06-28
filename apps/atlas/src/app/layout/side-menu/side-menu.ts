@@ -154,7 +154,12 @@ export interface MenuArea {
     .side-menu {
       width: var(--sidemenu-width);
       height: 100%;
-      background: var(--sidemenu-bg);
+      /* Very subtle gradient layered over the theme's menu colour. It is
+         transparent at the very top so it never breaks the Merged Blue seam
+         with the toolbar, and deepens gently toward the bottom. */
+      background:
+        linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.06) 100%),
+        var(--sidemenu-bg);
       transition: width var(--transition-base);
       overflow: hidden;
       border-right: 1px solid var(--toolbar-border);
@@ -175,10 +180,8 @@ export interface MenuArea {
       align-items: center;
       height: var(--toolbar-secondary-height);
       padding-inline: var(--space-md);
-      background: rgba(0, 0, 0, 0.15);
       font-size: var(--text-xs);
       color: var(--toolbar-text-muted);
-      border-bottom: 1px solid var(--sidemenu-border);
       flex-shrink: 0;
       white-space: nowrap;
       gap: var(--space-sm);
@@ -295,11 +298,10 @@ export interface MenuArea {
       font-weight: var(--weight-medium);
       transition: background var(--transition-fast), color var(--transition-fast);
       white-space: nowrap;
-      border-bottom: 1px solid var(--sidemenu-border);
       text-align: left;
     }
+    /* Hover only lifts the text colour — no background change. */
     .side-menu__link:hover {
-      background: var(--sidemenu-active-bg);
       color: var(--sidemenu-text-hover);
     }
     /* Focus-visible for keyboard navigation */
@@ -307,10 +309,13 @@ export interface MenuArea {
       outline: 2px solid var(--bmo-blue-light);
       outline-offset: -2px;
     }
+    /* Active item: a horizontal gradient highlight that is strongest at the
+       RIGHT edge of the item and fades out toward the left. */
     .side-menu__link--active {
-      background: rgba(0, 0, 0, 0.2);
+      background: linear-gradient(to left,
+        color-mix(in srgb, var(--color-primary, #4da3d4) 55%, transparent) 0%,
+        transparent 85%);
       color: var(--sidemenu-text-hover);
-      border-left: 3px solid var(--bmo-blue-light, #4da3d4);
     }
     .side-menu__link--has-children {
       cursor: pointer;
@@ -341,7 +346,6 @@ export interface MenuArea {
       color: var(--sidemenu-text-hover);
       font-size: var(--text-sm);
       font-weight: var(--weight-semibold);
-      border-bottom: 1px solid var(--sidemenu-border);
       transition: background var(--transition-fast);
       text-align: left;
     }
@@ -366,7 +370,6 @@ export interface MenuArea {
     .side-menu__app-header {
       display: flex;
       align-items: center;
-      border-bottom: 1px solid var(--sidemenu-border);
     }
     .side-menu__app-header .side-menu__link {
       flex: 1;
@@ -429,24 +432,24 @@ export interface MenuArea {
       padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-xl);
       color: var(--sidemenu-text);
       font-size: var(--text-sm);
-      border-bottom: 1px solid var(--sidemenu-border);
       transition: background var(--transition-fast), color var(--transition-fast);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
     .side-menu__sublink:hover {
-      background: var(--sidemenu-active-bg);
       color: var(--sidemenu-text-hover);
     }
     .side-menu__sublink:focus-visible {
       outline: 2px solid var(--bmo-blue-light);
       outline-offset: -2px;
     }
+    /* Active sub-link: same right→left gradient highlight. */
     .side-menu__sublink--active {
-      background: rgba(0, 0, 0, 0.15);
+      background: linear-gradient(to left,
+        color-mix(in srgb, var(--color-primary, #4da3d4) 55%, transparent) 0%,
+        transparent 85%);
       color: var(--sidemenu-text-hover);
-      border-left: 3px solid var(--bmo-blue-light, #4da3d4);
     }
 
     /* ══════════════════════════════════════════════

@@ -38,6 +38,14 @@ import { ThemeService } from '@shared';
             </button>
             <button
               class="btn"
+              [class.btn--primary]="themeService.resolved() === 'silver-shine'"
+              [class.btn--outline]="themeService.resolved() !== 'silver-shine'"
+              (click)="themeService.setPreference('silver-shine')"
+            >
+              ✨ Silver Shine
+            </button>
+            <button
+              class="btn"
               [class.btn--primary]="themeService.resolved() === 'midnight'"
               [class.btn--outline]="themeService.resolved() !== 'midnight'"
               (click)="themeService.setPreference('midnight')"
@@ -107,6 +115,14 @@ import { ThemeService } from '@shared';
               (click)="themeService.setPreference('catppuccin')"
             >
               🐱 Catppuccin
+            </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'merged-blue'"
+              [class.btn--outline]="themeService.resolved() !== 'merged-blue'"
+              (click)="themeService.setPreference('merged-blue')"
+            >
+              🟦 Merged Blue
             </button>
           </div>
         </div>

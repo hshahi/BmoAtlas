@@ -1,0 +1,74 @@
+/* ── Merged Blue Theme — unified header + side menu ────────────
+   The toolbar (top row) and side menu (left column) are separate
+   components, but this theme makes them read as ONE continuous
+   dark-blue panel:
+
+   • The toolbar gradient ENDS at #1c2e56.
+   • The side-menu gradient STARTS at #1c2e56.
+   Because the side menu sits directly under the toolbar's left edge,
+   the colours meet exactly at the seam → one smooth top→bottom
+   gradient down the whole left side.
+
+   • --toolbar-border is transparent, removing BOTH the toolbar's
+   bottom divider and the side-menu's right divider (they share that
+   token), so there is no line breaking the merge. The menu is set
+   off from the darker content area by tone alone — no hard edge.
+
+   The main content sits on a darker navy so the merged blue panel
+   stands forward, like the reference UI. ───────────────────────── */
+:root[data-theme="merged-blue"] {
+  color-scheme: dark;
+
+  --color-bg:          #080f1f;
+  --color-bg-surface:  #111d39;
+  --color-bg-elevated: #182748;
+  --color-bg-muted:    #0f1a33;
+
+  --color-text:          #e6ecf7;
+  --color-text-secondary: #93a1c0;
+  --color-text-muted:    #5a6a8c;
+  --color-text-inverse:  #080f1f;
+
+  --color-border:       #1e2c4a;
+  --color-border-focus: #5b8def;
+
+  --color-primary:       #5b8def;
+  --color-primary-hover: #3b6fd4;
+  --color-primary-light: #14233f;
+
+  --color-success:       #34d399;
+  --color-success-light: #064e3b;
+  --color-danger:        #f87171;
+  --color-danger-light:  #7f1d1d;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info:          #60a5fa;
+  --color-info-light:    #0c2a4e;
+
+  --color-gain:  #34d399;
+  --color-loss:  #f87171;
+
+  --color-accent: #6ea8ff;
+
+  /* Toolbar gradient ends at #1c2e56 — the side menu starts there. */
+  --toolbar-bg:          linear-gradient(180deg, #284472 0%, #1c2e56 100%);
+  --toolbar-bg-secondary: linear-gradient(180deg, #243d6a 0%, #1c2e56 100%);
+  --toolbar-text:        #e6ecf7;
+  --toolbar-text-muted:  rgba(230, 236, 247, 0.6);
+  /* Transparent: removes the toolbar↔menu seam and the menu↔content edge,
+     so the blue panel is unbroken (tone separates it from the content). */
+  --toolbar-border:      transparent;
+
+  /* Side-menu gradient starts at #1c2e56 (toolbar's end) and darkens down,
+     so toolbar + menu form one continuous top→bottom gradient. */
+  --sidemenu-bg:         linear-gradient(180deg, #1c2e56 0%, #0d1830 100%);
+  --sidemenu-text:       rgba(230, 236, 247, 0.66);
+  --sidemenu-text-hover: #e6ecf7;
+  --sidemenu-active-bg:  rgba(91, 141, 239, 0.16);
+  --sidemenu-border:     rgba(255, 255, 255, 0.06);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.45);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.45);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.45);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.45);
+}

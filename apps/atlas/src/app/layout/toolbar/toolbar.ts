@@ -39,6 +39,7 @@ import { ComponentBase } from '@core';
             @case ('light') { ☀️ }
             @case ('dark') { 🌙 }
             @case ('silver') { 🪙 }
+            @case ('silver-shine') { ✨ }
             @case ('midnight') { 🌌 }
             @case ('platinum') { ⚪ }
             @case ('chrome') { 🪞 }
@@ -48,6 +49,7 @@ import { ComponentBase } from '@core';
             @case ('tokyo-night') { 🌃 }
             @case ('high-contrast') { 🔲 }
             @case ('catppuccin') { 🐱 }
+            @case ('merged-blue') { 🟦 }
           }
         </button>
         <button class="toolbar__icon-btn" (click)="menuToggle.emit()" aria-label="Toggle menu">

@@ -1,0 +1,90 @@
+/* ── Silver Shine Theme — bright, glossy silver ────────────────
+   A much lighter, shinier Silver: the bars are bright brushed steel
+   (NOT mid-grey), with a strong diagonal glare streak and a fine
+   brushed texture for the silver character. Light metal everywhere
+   → dark text on the bars and on primary buttons. ─────────────── */
+:root[data-theme="silver-shine"] {
+  color-scheme: light;
+
+  --color-bg:          #eef1f5;
+  --color-bg-surface:  #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-muted:    #e3e8ee;
+
+  --color-text:          #1b1f24;
+  --color-text-secondary: #4a5159;
+  --color-text-muted:    #828b94;
+  --color-text-inverse:  #ffffff;
+
+  --color-border:       #d2d9e0;
+  --color-border-focus: #4d6b8a;
+
+  --color-primary:       #4d6b8a;
+  --color-primary-hover: #3a5470;
+  --color-primary-light: #e2e9f0;
+
+  /* Bright shiny steel button — glare streak over a near-white→light-steel
+     gradient. Light metal → dark button text. */
+  --btn-primary-text:    #1b2026;
+  --btn-primary-bg:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.6) 48%, transparent 57%),
+    linear-gradient(180deg, #fdfeff 0%, #d4dce5 100%);
+  --btn-primary-bg-hover:
+    linear-gradient(110deg, transparent 40%, rgba(255, 255, 255, 0.7) 48%, transparent 57%),
+    linear-gradient(180deg, #ffffff 0%, #cad3dd 100%);
+
+  --color-success:       #15803d;
+  --color-success-light: #dcfce7;
+  --color-danger:        #b91c1c;
+  --color-danger-light:  #fee2e2;
+  --color-warning:       #b45309;
+  --color-warning-light: #fef3c7;
+  --color-info:          #4d6b8a;
+  --color-info-light:    #e2e9f0;
+
+  --color-gain:  #15803d;
+  --color-loss:  #b91c1c;
+
+  --color-accent: #7c9ec0;
+
+  /* Polished (not brushed) metal bars: layered specular glare highlights over
+     a smooth near-white→light-steel gradient — a clean reflective sheen, no
+     hairlines. Dark text rides on top. */
+  --toolbar-bg:
+    linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, 0.6) 43%, transparent 50%, rgba(255, 255, 255, 0.28) 60%, transparent 70%),
+    linear-gradient(180deg, #fdfeff 0%, #dee5ec 100%);
+  --toolbar-bg-secondary: linear-gradient(180deg, #f3f6f9 0%, #dde4ea 100%);
+  --toolbar-text:        #2b323a;
+  --toolbar-text-muted:  rgba(43, 50, 58, 0.6);
+  --toolbar-border:      rgba(255, 255, 255, 0.6);
+
+  /* Polished metal column: a soft diagonal sheen over a smooth gradient. */
+  --sidemenu-bg:
+    linear-gradient(102deg, transparent 18%, rgba(255, 255, 255, 0.4) 36%, transparent 54%),
+    linear-gradient(180deg, #f6f8fb 0%, #dde4eb 100%);
+  --sidemenu-text:       rgba(27, 31, 36, 0.66);
+  --sidemenu-text-hover: #1b1f24;
+  --sidemenu-active-bg:  rgba(77, 107, 138, 0.14);
+  --sidemenu-border:     rgba(0, 0, 0, 0.08);
+
+  /* Metallic component surfaces — bright, crisp bevels. */
+  --btn-primary-border:        1px solid rgba(0, 0, 0, 0.14);
+  --btn-primary-shadow:        inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -1px 0 rgba(0, 0, 0, 0.15), var(--shadow-sm);
+  --btn-primary-active-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.28);
+
+  --card-bg:     linear-gradient(180deg, #ffffff 0%, #f8fafc 45%, #eef2f6 100%);
+  --card-border: #d6dce2;
+  --card-shadow: inset 0 1px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(0, 0, 0, 0.05), var(--shadow-lg);
+
+  --badge-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 -1px 0 rgba(0, 0, 0, 0.06);
+
+  --input-bg:           linear-gradient(180deg, #e8ecf0 0%, #f6f8fa 100%);
+  --input-border:       #c5ccd3;
+  --input-shadow:       inset 0 1px 3px rgba(0, 0, 0, 0.12), inset 0 -1px 0 rgba(255, 255, 255, 0.85);
+  --input-focus-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.12), 0 0 0 3px color-mix(in srgb, var(--color-border-focus) 25%, transparent);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.1);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.15), 0 2px 4px -2px rgb(0 0 0 / 0.12);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.18), 0 4px 6px -4px rgb(0 0 0 / 0.12);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.18), 0 8px 10px -6px rgb(0 0 0 / 0.12);
+}

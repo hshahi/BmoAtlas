@@ -2,15 +2,15 @@ import { Injectable, signal, effect, PLATFORM_ID, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 
 export type Theme =
-  | 'light' | 'dark' | 'silver' | 'midnight' | 'platinum' | 'chrome' | 'titanium'
-  | 'nord' | 'dracula' | 'tokyo-night' | 'high-contrast' | 'catppuccin';
+  | 'light' | 'dark' | 'silver' | 'silver-shine' | 'midnight' | 'platinum' | 'chrome' | 'titanium'
+  | 'nord' | 'dracula' | 'tokyo-night' | 'high-contrast' | 'catppuccin' | 'merged-blue';
 
 const STORAGE_KEY = 'bmo-atlas-theme';
 
 /** All selectable themes, in toggle-cycle order. */
 const THEMES: readonly Theme[] = [
-  'light', 'dark', 'silver', 'midnight', 'platinum', 'chrome', 'titanium',
-  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin',
+  'light', 'dark', 'silver', 'silver-shine', 'midnight', 'platinum', 'chrome', 'titanium',
+  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin', 'merged-blue',
 ];
 
 @Injectable({ providedIn: 'root' })

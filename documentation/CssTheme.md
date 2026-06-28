@@ -493,13 +493,14 @@ Design tokens are the **single source of truth** for all visual values. They are
 
 ## Themes — `data-theme` Attribute
 
-BmoAtlas ships **twelve themes**, all driven by the `data-theme` attribute on `<html>`:
+BmoAtlas ships **fourteen themes**, all driven by the `data-theme` attribute on `<html>`:
 
 | Theme | `data-theme` value | `color-scheme` | Character |
 |-------|--------------------|----------------|-----------|
 | Light | _(none / default)_ | light | Default BMO light palette |
 | Dark | `dark` | dark | Near-black slate |
 | Silver | `silver` | light | Matte brushed-metal greys with a steel-blue primary |
+| Silver Shine | `silver-shine` | light | Brighter, glossier Silver — lighter surfaces + specular sheen |
 | Midnight | `midnight` | dark | Deep midnight-blue surfaces with a bright blue primary |
 | Platinum | `platinum` | light | Lighter, polished silver with a specular sheen |
 | Chrome | `chrome` | light | Mirror-polished metal, high-contrast reflections |
@@ -509,6 +510,9 @@ BmoAtlas ships **twelve themes**, all driven by the `data-theme` attribute on `<
 | Tokyo Night | `tokyo-night` | dark | Deep blue-violet |
 | High Contrast | `high-contrast` | dark | Pure-black, maximum-legibility accessibility theme |
 | Catppuccin | `catppuccin` | dark | Soft dark pastel (Mocha) |
+| Merged Blue | `merged-blue` | dark | Toolbar + side menu form one continuous dark-blue gradient panel |
+
+> **Merged Blue** is a worked example of cross-component visual continuity: the toolbar and side menu are separate Angular components, but the toolbar's gradient *ends* at the colour the side-menu's gradient *starts* (`#1c2e56`), and `--toolbar-border` (shared by the toolbar's bottom edge and the menu's right edge) is `transparent`. Because the side menu sits directly beneath the toolbar's left portion, the two render as a single unbroken top→bottom gradient — no `background-attachment: fixed` needed.
 
 The four metallic themes (Silver, Platinum, Chrome, Titanium) share a token-driven treatment: `--card-*`, `--btn-primary-*`, `--badge-shadow`, and `--input-*` tokens (defined in [_components.css](../libs/shared/src/styles/_components.css) with flat fallbacks) let each theme render raised, beveled buttons/cards/badges and recessed inputs without per-theme selectors. The "shiny" themes add a diagonal specular glare streak over a clean top→bottom gradient.
 
