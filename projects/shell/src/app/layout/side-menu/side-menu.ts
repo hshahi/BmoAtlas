@@ -26,7 +26,7 @@ export interface MenuArea {
   selector: 'app-side-menu',
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <nav class="side-menu" [class.side-menu--collapsed]="collapsed()" aria-label="Main navigation">
+    <nav class="side-menu" [class.side-menu--collapsed]="collapsed()" aria-label="Main navigation" (mousemove)="onPointerMove($event)">
       <!-- User bar at top of menu -->
       <div class="side-menu__user-bar">
         <span class="side-menu__username">ibg&#92;user</span>
@@ -287,6 +287,8 @@ export interface MenuArea {
        LINKS — touch-friendly with min-height
        ══════════════════════════════════════════════ */
     .side-menu__link {
+      position: relative;
+      isolation: isolate;                    /* contain the glow pseudo behind the text */
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -300,7 +302,59 @@ export interface MenuArea {
       white-space: nowrap;
       text-align: left;
     }
-    /* Hover only lifts the text colour — no background change. */
+    /* Cursor-tracking spotlight glow. --mouse-x/--mouse-y are set per item in JS.
+       The glow is derived from --sidemenu-text-hover, so it darkens on light
+       menus and lightens on dark menus automatically (override per theme with
+       --sidemenu-hover-glow / --sidemenu-hover-radius). Sits behind the text
+       via z-index:-1 + the item's own isolation. */
+    .side-menu__link::before,
+    .side-menu__sublink::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(
+        var(--sidemenu-hover-radius, 140px) circle at var(--mouse-x, -200px) var(--mouse-y, 50%),
+        var(--sidemenu-hover-glow, color-mix(in srgb, var(--sidemenu-text-hover) 16%, transparent)),
+        transparent 62%
+      );
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .side-menu__link:hover::before,
+    .side-menu__sublink:hover::before {
+      opacity: 1;
+    }
+    /* Cursor-tracking BORDER light: a 1px gradient ring around the item that
+       glows near the pointer. Uses the padding + mask-exclude trick so only the
+       border edge shows. Brighter tint than the inner glow, still theme-derived. */
+    .side-menu__link::after,
+    .side-menu__sublink::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      padding: 1px;
+      border-radius: inherit;
+      pointer-events: none;
+      background: radial-gradient(
+        var(--sidemenu-hover-radius, 140px) circle at var(--mouse-x, -200px) var(--mouse-y, 50%),
+        var(--sidemenu-hover-border, color-mix(in srgb, var(--sidemenu-text-hover) 55%, transparent)),
+        transparent 60%
+      );
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity var(--transition-fast);
+    }
+    .side-menu__link:hover::after,
+    .side-menu__sublink:hover::after {
+      opacity: 1;
+    }
+    /* Hover only lifts the text colour — no flat background change. */
     .side-menu__link:hover {
       color: var(--sidemenu-text-hover);
     }
@@ -425,10 +479,11 @@ export interface MenuArea {
       background: rgba(0, 0, 0, 0.1);
     }
     .side-menu__sublink {
-      display: block;
-      min-height: var(--touch-target-min);
+      position: relative;
+      isolation: isolate;
       display: flex;
       align-items: center;
+      min-height: var(--touch-target-min);
       padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-xl);
       color: var(--sidemenu-text);
       font-size: var(--text-sm);
@@ -622,6 +677,22 @@ export class SideMenu {
     { label: 'Securities', route: '/securities' },
     { label: 'IFPR', route: '/ifpr' },
   ];
+
+  /**
+   * Track the pointer over the hovered menu item and expose its position as
+   * --mouse-x / --mouse-y CSS variables, driving the spotlight glow (see the
+   * ::before rule). One listener on the nav; we resolve the specific item via
+   * closest() and set the vars relative to that item's box.
+   */
+  protected onPointerMove(event: MouseEvent): void {
+    const item = (event.target as HTMLElement).closest<HTMLElement>(
+      '.side-menu__link, .side-menu__sublink',
+    );
+    if (!item) return;
+    const rect = item.getBoundingClientRect();
+    item.style.setProperty('--mouse-x', `${event.clientX - rect.left}px`);
+    item.style.setProperty('--mouse-y', `${event.clientY - rect.top}px`);
+  }
 
   /** Drill into an area's inner menu with animation */
   drillInto(area: MenuArea): void {
