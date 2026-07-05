@@ -1,20 +1,28 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { HttpClientData } from '@core';
-import { LoadWrapperClientData } from '@shared';
+import { LoadWrapperClientData, AtlasLoader } from '@shared';
 import { StockData } from '../../models/stock.models';
 import { StockPriceTable } from '../../components/stock-price-table';
 
 @Component({
   selector: 'app-breakdown-table',
-  imports: [LoadWrapperClientData, StockPriceTable],
+  imports: [LoadWrapperClientData, StockPriceTable, AtlasLoader],
   template: `
     <div class="panel card">
       <h3 class="panel__title">{{ title() }}</h3>
 
-      <load-wrapper-client-data [source]="stockData()">
-      
+      <load-wrapper-client-data [source]="stockData()" [showReloadingState]="false">
+
+        <!-- First load — composed loader (the wrapper no longer ships a default). -->
+        <ng-template #loading>
+          <atlas-loader class="panel__loader" message="Loading price data…" />
+        </ng-template>
+
         <ng-template #content let-data>
-          <stock-price-table [data]="data" [limit]="10" />
+          <!-- atlas-loader wraps this section and overlays a spinner on refresh. -->
+          <atlas-loader [loading]="stockData().isReloading()">
+            <stock-price-table [data]="data" [limit]="10" />
+          </atlas-loader>
         </ng-template>
 
         <ng-template #error let-error="error" let-retry="retry">
@@ -40,6 +48,12 @@ import { StockPriceTable } from '../../components/stock-price-table';
       font-size: var(--text-lg);
       font-weight: var(--weight-semibold);
       border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Standalone first-load loader needs height so the centered spinner shows. */
+    .panel__loader {
+      display: block;
+      min-height: 14rem;
     }
 
     .panel__loading {

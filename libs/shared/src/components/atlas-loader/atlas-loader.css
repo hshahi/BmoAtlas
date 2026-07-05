@@ -1,16 +1,23 @@
 :host {
   display: block;
+  position: relative;   /* contain the absolutely-positioned overlay */
 }
 
+/* Spinner layer — covers the wrapped section (or the host's min-height when
+   used standalone) with a translucent backdrop, spinner + message centered. */
 .loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: var(--space-md, 1rem);
-  padding: var(--space-xl, 2rem);
+  background: color-mix(in srgb, var(--color-bg-surface, #fff) 55%, transparent);
 }
 
+/* Full-screen page overlay variant. */
 .loader--overlay {
   position: fixed;
   inset: 0;
@@ -23,7 +30,6 @@
   width: 56px;
   height: 56px;
 }
-
 .loader__spinner svg {
   width: 100%;
   height: 100%;
@@ -32,8 +38,7 @@
 /* ── Outer arc — clockwise ─────────────────────────────── */
 .loader__arc--outer {
   stroke: var(--color-primary, #60a5fa);
-  /* Show ~120° of the circle  (circumference ≈ 163.4) */
-  stroke-dasharray: 54 109.4;
+  stroke-dasharray: 54 109.4;   /* ~120° of circumference ≈ 163.4 */
   stroke-dashoffset: 0;
   transform-origin: center;
   animation: rotate-cw 1.2s linear infinite;
@@ -42,8 +47,7 @@
 /* ── Inner arc — anti-clockwise ────────────────────────── */
 .loader__arc--inner {
   stroke: var(--color-accent, #7dd3fc);
-  /* Show ~100° of the circle  (circumference ≈ 100.5) */
-  stroke-dasharray: 34 66.5;
+  stroke-dasharray: 34 66.5;    /* ~100° of circumference ≈ 100.5 */
   stroke-dashoffset: 0;
   transform-origin: center;
   animation: rotate-ccw 1s linear infinite;
@@ -57,13 +61,8 @@
 
 /* ── Keyframes ─────────────────────────────────────────── */
 @keyframes rotate-cw {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
-
 @keyframes rotate-ccw {
-  to {
-    transform: rotate(-360deg);
-  }
+  to { transform: rotate(-360deg); }
 }

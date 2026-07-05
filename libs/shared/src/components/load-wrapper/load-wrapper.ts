@@ -1,11 +1,7 @@
 import { CommonModule } from "@angular/common";
-import { Component, input, output, contentChild, computed, effect, TemplateRef, Signal, ChangeDetectionStrategy, CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
+import { Component, input, output, contentChild, computed, effect, TemplateRef, Signal, ChangeDetectionStrategy } from "@angular/core";
 import { ResourceStatus } from '@angular/core';
 import { HttpData } from "@core";
-import "@aejkatappaja/phantom-ui";
-
-/** Which loading indicator to show: the default spinner, or the phantom-ui shimmer overlay. */
-export type LoaderKind = 'default' | 'shimmer';
 
 export interface ContentContext<T> {
 	$implicit: T;
@@ -36,14 +32,11 @@ export interface IdleContext {
 	templateUrl: './load-wrapper.html',
 	styleUrl: './load-wrapper.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class LoadWrapper<T> {
 	source = input.required<HttpData<T>>();
 	emptyWhen = input<((data: T) => boolean) | undefined>(undefined);
 	showReloadingState = input<boolean>(true);
-	/** 'default' = spinner (existing behaviour); 'shimmer' = phantom-ui overlay. */
-	loader = input<LoaderKind>('default');
 
 	loaded = output<T>();
 	errored = output<unknown>();
@@ -83,7 +76,6 @@ export class LoadWrapper<T> {
 	});
 
 	protected showContent = computed(() => this.isResolved() && !this.isEmpty());
-	protected isBusy = computed(() => this.isLoading() || this.isReloading());
 
 	protected contentContext = computed<ContentContext<T> | null>(() => {
 		const data = this.currentData();

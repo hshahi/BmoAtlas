@@ -179,23 +179,13 @@ describe('LoadWrapperClientData', () => {
 			expect(wrapper).toBeTruthy();
 		});
 
-		// --- Loading state ---
-		it('should show default loading spinner when status is loading', async () => {
+		// --- Loading state (built-in loader disabled; composed per page) ---
+		it('should render no built-in loader when loading (loaders are composed in the page)', async () => {
 			mock.status.set('loading');
 			await stabilize(fixture);
 
-			expect(queryEl(fixture, '.data-status__loading')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__spinner')).toBeTruthy();
-			expect(textOf(fixture, '.data-status__loading')).toContain('Loading...');
-		});
-
-		it('should render SVG-based spinner in default loading state', async () => {
-			mock.status.set('loading');
-			await stabilize(fixture);
-
-			expect(queryEl(fixture, '.data-status__spinner svg')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__arc--outer')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__arc--inner')).toBeTruthy();
+			expect(queryEl(fixture, '.data-status__loading')).toBeNull();
+			expect(queryEl(fixture, '.data-status__spinner')).toBeNull();
 		});
 
 		it('should not show content when loading', async () => {
@@ -261,8 +251,8 @@ describe('LoadWrapperClientData', () => {
 			expect(textOf(fixture, '.test-content')).toContain('local-data');
 		});
 
-		// --- Reloading state (default overlay) ---
-		it('should show default reloading overlay when reloading with showReloadingState=true', async () => {
+		// --- Reloading state (content stays; no built-in overlay) ---
+		it('should keep content visible during reload with no built-in overlay', async () => {
 			mock.status.set('resolved');
 			mock.value.set(['data']);
 			mock.hasValue.set(true);
@@ -271,21 +261,11 @@ describe('LoadWrapperClientData', () => {
 			mock.status.set('reloading');
 			await stabilize(fixture);
 
-			expect(queryEl(fixture, '.data-status__reloading-wrapper')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__reloading-overlay')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__spinner--small')).toBeTruthy();
-		});
-
-		it('should render SVG spinner in reloading overlay', async () => {
-			mock.status.set('resolved');
-			mock.value.set(['data']);
-			mock.hasValue.set(true);
-			await stabilize(fixture);
-
-			mock.status.set('reloading');
-			await stabilize(fixture);
-
-			expect(queryEl(fixture, '.data-status__spinner--small svg')).toBeTruthy();
+			// built-in overlay spinner is disabled (composed per page)
+			expect(queryEl(fixture, '.data-status__reloading-wrapper')).toBeNull();
+			expect(queryEl(fixture, '.data-status__spinner--small')).toBeNull();
+			// content persists during reload (single, stable location)
+			expect(queryEl(fixture, '.test-content')).toBeTruthy();
 		});
 
 		// --- Idle state ---
@@ -650,42 +630,39 @@ describe('LoadWrapperClientData', () => {
 		});
 
 		it('should transition from idle → loading → resolved', async () => {
-			// Idle
-			expect(queryEl(fixture, '.data-status__loading')).toBeNull();
+			// Idle — no content
 			expect(queryEl(fixture, '.test-content')).toBeNull();
 
-			// Loading
+			// Loading — no built-in loader, content not shown yet
 			mock.status.set('loading');
 			await stabilize(fixture);
-			expect(queryEl(fixture, '.data-status__loading')).toBeTruthy();
+			expect(queryEl(fixture, '.test-content')).toBeNull();
 
 			// Resolved
 			mock.status.set('resolved');
 			mock.value.set(['loaded']);
 			mock.hasValue.set(true);
 			await stabilize(fixture);
-			expect(queryEl(fixture, '.data-status__loading')).toBeNull();
 			expect(queryEl(fixture, '.test-content')).toBeTruthy();
 		});
 
 		it('should transition from loading → error → loading → resolved', async () => {
-			// Loading
+			// Loading — no content yet
 			mock.status.set('loading');
 			await stabilize(fixture);
-			expect(queryEl(fixture, '.data-status__loading')).toBeTruthy();
+			expect(queryEl(fixture, '.test-content')).toBeNull();
 
 			// Error
 			mock.status.set('error');
 			mock.error.set('fail');
 			await stabilize(fixture);
 			expect(queryEl(fixture, '.data-status__error')).toBeTruthy();
-			expect(queryEl(fixture, '.data-status__loading')).toBeNull();
 
-			// Loading again (retry)
+			// Loading again (retry) — error cleared, no content
 			mock.status.set('loading');
 			await stabilize(fixture);
-			expect(queryEl(fixture, '.data-status__loading')).toBeTruthy();
 			expect(queryEl(fixture, '.data-status__error')).toBeNull();
+			expect(queryEl(fixture, '.test-content')).toBeNull();
 
 			// Resolved
 			mock.status.set('resolved');
@@ -703,10 +680,11 @@ describe('LoadWrapperClientData', () => {
 			await stabilize(fixture);
 			expect(queryEl(fixture, '.test-content')).toBeTruthy();
 
-			// Reloading
+			// Reloading — content persists (single stable location, no built-in overlay)
 			mock.status.set('reloading');
 			await stabilize(fixture);
-			expect(queryEl(fixture, '.data-status__reloading-wrapper')).toBeTruthy();
+			expect(queryEl(fixture, '.data-status__reloading-wrapper')).toBeNull();
+			expect(queryEl(fixture, '.test-content')).toBeTruthy();
 
 			// Resolved again
 			mock.status.set('resolved');
@@ -738,11 +716,12 @@ describe('LoadWrapperClientData', () => {
 			await stabilize(fixture);
 		});
 
-		it('should still show default loading state', async () => {
+		it('should render nothing when loading without a #loading template', async () => {
 			mock.status.set('loading');
 			await stabilize(fixture);
 
-			expect(queryEl(fixture, '.data-status__loading')).toBeTruthy();
+			// Built-in loader is disabled; with no #loading template nothing renders.
+			expect(queryEl(fixture, '.data-status__loading')).toBeNull();
 		});
 
 		it('should still show default error state', async () => {

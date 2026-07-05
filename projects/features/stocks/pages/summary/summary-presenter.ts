@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import type {
@@ -10,8 +10,9 @@ import type {
   GetRowIdParams,
 } from 'ag-grid-community';
 import { HttpClientData } from '@core';
-import { LoadWrapperClientData } from '@shared';
+import { LoadWrapperClientData, AtlasLoader } from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
+import '@aejkatappaja/phantom-ui';
 
 const money = (p: ValueFormatterParams<StockEntry, number>): string =>
   p.value == null ? '' : Number(p.value).toFixed(2);
@@ -33,7 +34,7 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
 
 @Component({
   selector: 'app-summary-presenter',
-  imports: [LoadWrapperClientData, AgGridAngular],
+  imports: [LoadWrapperClientData, AgGridAngular, AtlasLoader],
   template: `
     <div class="summary">
       <div class="summary__header">
@@ -44,52 +45,83 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
         </div>
       </div>
 
-      <load-wrapper-client-data [source]="stockData()" loader="shimmer">
+      <!-- showReloadingState=false keeps the content mounted during refresh so the
+           phantom-ui overlays below can shimmer over it. Each section is wrapped in
+           its own <phantom-ui>, all driven by the resource's reloading state. -->
+      <load-wrapper-client-data [source]="stockData()" [showReloadingState]="false">
+
+        <!-- First load — composed loader (the wrapper no longer ships a default). -->
+        <ng-template #loading>
+          <atlas-loader class="summary__first-load" message="Loading stock data…" />
+        </ng-template>
 
         <ng-template #content let-data>
-          <div class="summary__meta card">
-            <div class="summary__meta-item">
-              <span class="summary__meta-label">Symbol</span>
-              <span class="summary__meta-value">{{ data.meta.symbol }}</span>
+          <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+            <div class="summary__meta card">
+              <div class="summary__meta-item">
+                <span class="summary__meta-label">Symbol</span>
+                <span class="summary__meta-value">{{ data.meta.symbol }}</span>
+              </div>
+              <div class="summary__meta-item">
+                <span class="summary__meta-label">Last Refreshed</span>
+                <span class="summary__meta-value">{{ data.meta.lastRefreshed }}</span>
+              </div>
+              <div class="summary__meta-item">
+                <span class="summary__meta-label">Time Zone</span>
+                <span class="summary__meta-value">{{ data.meta.timeZone }}</span>
+              </div>
+              <div class="summary__meta-item">
+                <span class="summary__meta-label">Periods</span>
+                <span class="summary__meta-value">{{ data.entries.length }}</span>
+              </div>
             </div>
-            <div class="summary__meta-item">
-              <span class="summary__meta-label">Last Refreshed</span>
-              <span class="summary__meta-value">{{ data.meta.lastRefreshed }}</span>
-            </div>
-            <div class="summary__meta-item">
-              <span class="summary__meta-label">Time Zone</span>
-              <span class="summary__meta-value">{{ data.meta.timeZone }}</span>
-            </div>
-            <div class="summary__meta-item">
-              <span class="summary__meta-label">Periods</span>
-              <span class="summary__meta-value">{{ data.entries.length }}</span>
-            </div>
-          </div>
+          </phantom-ui>
 
-          <div class="summary__toolbar">
-            <input
-              class="form-input summary__search"
-              type="text"
-              placeholder="Filter rows…"
-              [value]="quickFilter()"
-              (input)="onQuickFilter($event)"
-              aria-label="Filter table rows"
+          <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+            <div class="summary__toolbar">
+              <input
+                class="form-input summary__search"
+                type="text"
+                placeholder="Filter rows…"
+                [value]="quickFilter()"
+                (input)="onQuickFilter($event)"
+                aria-label="Filter table rows"
+              />
+              <button class="btn summary__export" (click)="exportCsv(data)">⬇ Export CSV</button>
+            </div>
+          </phantom-ui>
+
+          <!-- data-shimmer-no-children: AG Grid's virtualized cells can't be measured
+               as leaves, so capture the whole grid as one shimmer block. -->
+          <atlas-loader [loading]="stockData().isReloading()">
+              <ag-grid-angular
+                class="summary__grid card"
+                data-shimmer-no-children
+                [rowData]="getTopEntries(data)"
+                [columnDefs]="columnDefs"
+                [defaultColDef]="defaultColDef"
+                [pinnedBottomRowData]="summaryRow(data)"
+                [quickFilterText]="quickFilter()"
+                [getRowId]="getRowId"
+                [domLayout]="'autoHeight'"
+                (gridReady)="onGridReady($event)"
+              />
+            </atlas-loader>
+
+          <!-- <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+            <ag-grid-angular
+              class="summary__grid card"
+              data-shimmer-no-children
+              [rowData]="getTopEntries(data)"
+              [columnDefs]="columnDefs"
+              [defaultColDef]="defaultColDef"
+              [pinnedBottomRowData]="summaryRow(data)"
+              [quickFilterText]="quickFilter()"
+              [getRowId]="getRowId"
+              [domLayout]="'autoHeight'"
+              (gridReady)="onGridReady($event)"
             />
-            <button class="btn summary__export" (click)="exportCsv(data)">⬇ Export CSV</button>
-          </div>
-
-          <ag-grid-angular
-            class="summary__grid card"
-            data-shimmer-no-children
-            [rowData]="getTopEntries(data)"
-            [columnDefs]="columnDefs"
-            [defaultColDef]="defaultColDef"
-            [pinnedBottomRowData]="summaryRow(data)"
-            [quickFilterText]="quickFilter()"
-            [getRowId]="getRowId"
-            [domLayout]="'autoHeight'"
-            (gridReady)="onGridReady($event)"
-          />
+          </phantom-ui> -->
         </ng-template>
 
         <ng-template #error let-error="error" let-retry="retry">
@@ -224,6 +256,55 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
       overflow: hidden;
     }
 
+    /* Standalone first-load loader needs height so the centered spinner shows. */
+    .summary__first-load {
+      display: block;
+      min-height: 16rem;
+    }
+
+    /* Each section is wrapped in <phantom-ui>; make the element a block so it
+       doesn't collapse, and space the sections like the old direct children.
+       position + overflow contain and clip phantom-ui's absolutely-positioned
+       shimmer overlay so it can't spawn stray scroll bars. */
+    phantom-ui {
+      display: block;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: var(--space-lg);
+    }
+
+    /* While shimmering, AG Grid re-measures and can flip its OWN internal scroll
+       bars on. They live inside the grid (below the host clip above), so clip them
+       here — only during loading (phantom-ui[loading]) and only for these grids.
+       ::ng-deep reaches AG Grid's runtime-generated DOM. */
+    :host ::ng-deep phantom-ui[loading] .ag-body-horizontal-scroll,
+    :host ::ng-deep phantom-ui[loading] .ag-body-vertical-scroll {
+      display: none;
+    }
+    :host ::ng-deep phantom-ui[loading] .ag-body-viewport,
+    :host ::ng-deep phantom-ui[loading] .ag-center-cols-viewport {
+      overflow: hidden;
+      scrollbar-width: none;
+    }
+
+    /* ── Shimmer loader tuning (phantom-ui) ─────────────────────────────
+       Set HERE on the phantom-ui element and read by the web component.
+       Colours derive from --color-text, so they stay theme-adaptive
+       (darker on light themes, lighter on dark themes) automatically.
+         --shimmer-bg              Background of each shimmer block (lower % = subtler).
+         --shimmer-color           Colour of the moving sweep (animation="shimmer").
+         --shimmer-duration        Animation cycle time (higher = calmer).
+         --phantom-content-opacity Overlay mode — how visible the underlying
+                                   controls stay (higher → 1 = more visible).
+       The animation TYPE is the "animation" attribute on phantom-ui in the
+       template above, not here. */
+    phantom-ui {
+      --shimmer-bg: color-mix(in srgb, var(--color-text, #888) 8%, transparent);
+      --shimmer-color: color-mix(in srgb, var(--color-text, #888) 20%, transparent);
+      --shimmer-duration: 1.4s;
+      --phantom-content-opacity: 0.85;
+    }
+
     .summary__error {
       display: flex;
       flex-direction: column;
@@ -269,6 +350,7 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
     @keyframes arc-ccw { to { transform: rotate(-360deg); } }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class SummaryPresenter {
   stockData = input.required<HttpClientData<StockData>>();

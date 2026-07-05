@@ -1,13 +1,30 @@
 <div class="data-status">
+@switch (true) {
 
-@if (loader() === 'shimmer') {
-
-	<!-- ═══ Shimmer loader (phantom-ui overlay) ═══ -->
-	@if (isIdle()) {
+	<!-- Idle State (for LazyDataRef before load) -->
+	@case (isIdle()) {
 		@if (idleTemplate()) {
 			<ng-container *ngTemplateOutlet="idleTemplate(); context: idleContext()" />
 		}
-	} @else if (isError()) {
+	}
+
+	<!-- Loading State (first load). Provide a #loading template for the UI.
+	     The built-in spinner is intentionally disabled (see note below): loaders
+	     are now composed per section with <atlas-loader> / phantom-ui. -->
+	@case (isLoading()) {
+		@if (loadingTemplate()) {
+			<ng-container *ngTemplateOutlet="loadingTemplate()!" />
+		}
+		<!-- Default loader commented out — compose <atlas-loader> in the page instead.
+		<div class="data-status__loading">
+			<div class="data-status__spinner"></div>
+			<span>Loading...</span>
+		</div>
+		-->
+	}
+
+	<!-- Error State -->
+	@case (isError()) {
 		@if (errorTemplate()) {
 			<ng-container *ngTemplateOutlet="errorTemplate()!; context: errorContext()" />
 		} @else {
@@ -17,7 +34,10 @@
 				<button class="data-status__retry-btn" (click)="reload()">Retry</button>
 			</div>
 		}
-	} @else if (isEmpty()) {
+	}
+
+	<!-- Empty State -->
+	@case (isEmpty()) {
 		@if (emptyTemplate()) {
 			<ng-container *ngTemplateOutlet="emptyTemplate()!" />
 		} @else {
@@ -25,111 +45,27 @@
 				<p>No data available</p>
 			</div>
 		}
-	} @else {
-		<!-- Resolved / loading / reloading. On refresh (data present) the shimmer
-		     glints OVER the real content; on first load it renders a skeleton from
-		     the placeholder structure below. -->
-		<phantom-ui
-			[attr.loading]="isBusy() ? '' : null"
-			animation="shimmer"
-			[attr.mode]="hasValue() ? 'overlay' : 'skeleton'"
-		>
-			@if (contentTemplate() && contentContext()) {
-				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
-			} @else {
-				<div class="data-status__shimmer-placeholder" aria-hidden="true">
-					<div class="data-status__sk data-status__sk--title"></div>
-					<div class="data-status__sk-row">
-						<div class="data-status__sk data-status__sk--chip"></div>
-						<div class="data-status__sk data-status__sk--chip"></div>
-						<div class="data-status__sk data-status__sk--chip"></div>
-						<div class="data-status__sk data-status__sk--chip"></div>
-					</div>
-					<div class="data-status__sk data-status__sk--line"></div>
-					<div class="data-status__sk data-status__sk--line"></div>
-					<div class="data-status__sk data-status__sk--line"></div>
-					<div class="data-status__sk data-status__sk--line"></div>
-					<div class="data-status__sk data-status__sk--line"></div>
-					<div class="data-status__sk data-status__sk--line"></div>
-				</div>
-			}
-		</phantom-ui>
 	}
+}
 
-} @else {
+<!-- Reloading: render the #reloading template (if provided) over the content.
+     The default overlay spinner is commented out — compose <atlas-loader> instead.
+<div class="data-status__reloading-wrapper">
+	<div class="data-status__reloading-overlay">
+		<div class="data-status__spinner data-status__spinner--small"></div>
+	</div>
+	…content…
+</div>
+-->
+@if (isReloading() && showReloadingState() && reloadingTemplate()) {
+	<ng-container *ngTemplateOutlet="reloadingTemplate()!; context: reloadingContext()" />
+}
 
-	<!-- ═══ Default loader (spinner) ═══ -->
-	@switch (true) {
-
-		<!-- Idle State (for LazyDataRef before load) -->
-		@case (isIdle()) {
-			@if (idleTemplate()) {
-				<ng-container *ngTemplateOutlet="idleTemplate(); context: idleContext()" />
-			}
-		}
-
-		<!-- Loading State -->
-		@case (isLoading()) {
-			@if (loadingTemplate()) {
-				<ng-container *ngTemplateOutlet="loadingTemplate()!" />
-			} @else {
-				<div class="data-status__loading">
-					<div class="data-status__spinner"></div>
-					<span>Loading...</span>
-				</div>
-			}
-		}
-
-		<!-- Reloading State -->
-		@case (isReloading() && showReloadingState()) {
-			@if (reloadingTemplate()) {
-				<ng-container *ngTemplateOutlet="reloadingTemplate()!; context: reloadingContext()" />
-			} @else if (contentTemplate() && contentContext()) {
-				<div class="data-status__reloading-wrapper">
-					<div class="data-status__reloading-overlay">
-						<div class="data-status__spinner data-status__spinner--small"></div>
-					</div>
-					<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
-				</div>
-			}
-		}
-
-		<!-- Error State -->
-		@case (isError()) {
-			@if (errorTemplate()) {
-				<ng-container *ngTemplateOutlet="errorTemplate()!; context: errorContext()" />
-			} @else {
-				<div class="data-status__error">
-					<span class="data-status__error-icon">⚠</span>
-					<p>Something went wrong</p>
-					<button class="data-status__retry-btn" (click)="reload()">Retry</button>
-				</div>
-			}
-		}
-
-		<!-- Empty State -->
-		@case (isEmpty()) {
-			@if (emptyTemplate()) {
-				<ng-container *ngTemplateOutlet="emptyTemplate()!" />
-			} @else {
-				<div class="data-status__empty">
-					<p>No data available</p>
-				</div>
-			}
-		}
-
-		<!-- Success/Content State -->
-		@case (showContent()) {
-			@if (contentTemplate() && contentContext()) {
-				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
-			}
-		}
-	}
-
-	<!-- Reloading without separate template show content with overlay -->
-	@if (isReloading() && !showReloadingState() && contentTemplate() && contentContext()) {
-		<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
-	}
-
+<!-- Content — rendered in a SINGLE, stable location so the view is NOT destroyed
+     and recreated when the status flips resolved <-> reloading (which would blink
+     heavy children, e.g. an AG Grid). Present when resolved (non-empty) or during
+     any reload. -->
+@if ((showContent() || (isReloading() && !(showReloadingState() && reloadingTemplate()))) && contentTemplate() && contentContext()) {
+	<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
 }
 </div>

@@ -1,18 +1,25 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { HttpClientData } from '@core';
-import { LoadWrapperClientData } from '@shared';
+import { LoadWrapperClientData, AtlasLoader } from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
 
 @Component({
   selector: 'app-breakdown-list',
-  imports: [LoadWrapperClientData],
+  imports: [LoadWrapperClientData, AtlasLoader],
   template: `
     <div class="panel card">
       <h3 class="panel__title">{{ title() }}</h3>
 
-      <load-wrapper-client-data [source]="stockData()">
-        
+      <load-wrapper-client-data [source]="stockData()" [showReloadingState]="false">
+
+        <!-- First load — composed loader (the wrapper no longer ships a default). -->
+        <ng-template #loading>
+          <atlas-loader class="panel__loader" message="Loading volume data…" />
+        </ng-template>
+
         <ng-template #content let-data>
+          <!-- atlas-loader wraps this section and overlays a spinner on refresh. -->
+          <atlas-loader [loading]="stockData().isReloading()">
           <ul class="volume-list">
             @for (entry of getEntries(data); track entry.date) {
               <li class="volume-list__item">
@@ -36,6 +43,7 @@ import { StockData, StockEntry } from '../../models/stock.models';
               </li>
             }
           </ul>
+          </atlas-loader>
         </ng-template>
 
         <ng-template #error let-error="error" let-retry="retry">
@@ -61,6 +69,12 @@ import { StockData, StockEntry } from '../../models/stock.models';
       font-size: var(--text-lg);
       font-weight: var(--weight-semibold);
       border-bottom: 1px solid var(--color-border);
+    }
+
+    /* Standalone first-load loader needs height so the centered spinner shows. */
+    .panel__loader {
+      display: block;
+      min-height: 14rem;
     }
 
     .panel__loading {

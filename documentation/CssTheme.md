@@ -768,61 +768,58 @@ Grid cells render in the light DOM, so shared utility classes (`.text-gain`, `.f
 
 ## Loading States — Spinner & Shimmer
 
-`load-wrapper` and `load-wrapper-client-data` (in `libs/shared`) render the async lifecycle (idle → loading → reloading → resolved → error/empty) and expose a `loader` input to choose the busy indicator:
+`load-wrapper` and `load-wrapper-client-data` (in `libs/shared`) render the async lifecycle (idle → loading → reloading → resolved → error/empty) with a built-in **dual-arc spinner**. They are intentionally generic — they do **not** own a shimmer mode.
 
-| `loader` | Indicator |
-|----------|-----------|
-| `'default'` _(default)_ | The built-in dual-arc spinner |
-| `'shimmer'` | A [phantom-ui](https://www.npmjs.com/package/@aejkatappaja/phantom-ui) shimmer that measures the DOM and animates skeleton blocks |
+When a page wants a **shimmer** on refresh, it wraps its own sections in [phantom-ui](https://www.npmjs.com/package/@aejkatappaja/phantom-ui) *inside* the `#content` template and drives `loading` from the resource. This keeps the shimmer concern in the page (which knows its layout) rather than in the shared wrapper. The Summary page is the reference example:
 
 ```html
-<!-- Summary page opts in: -->
-<load-wrapper-client-data [source]="stockData()" loader="shimmer"> … </load-wrapper-client-data>
+<!-- projects/features/stocks/pages/summary/summary-presenter.ts -->
+<load-wrapper-client-data [source]="stockData()" [showReloadingState]="false">
+  <ng-template #content let-data>
+    <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+      <div class="summary__meta card"> … </div>
+    </phantom-ui>
+    <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+      <div class="summary__toolbar"> … </div>
+    </phantom-ui>
+    <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
+      <ag-grid-angular data-shimmer-no-children … />
+    </phantom-ui>
+  </ng-template>
+</load-wrapper-client-data>
 ```
 
-### How the shimmer mode behaves
-
-The wrapper renders `<phantom-ui>` around the content and switches technique by whether data exists yet:
-
-```html
-<phantom-ui
-  [attr.loading]="isBusy() ? '' : null"
-  animation="shimmer"
-  [attr.mode]="hasValue() ? 'overlay' : 'skeleton'">
-  …content, or a generic skeleton placeholder on first load…
-</phantom-ui>
-```
-
-- **First load** (no data) → `mode="skeleton"` over a generic placeholder structure (title bar, chip row, lines) so phantom-ui has real shapes to measure and shimmer.
-- **Refresh / reload** (data present) → `mode="overlay"`: the real content stays visible and dimmed while a light glint sweeps over it — stale-while-revalidate.
+- **One `<phantom-ui>` per section** — each measures only its own subtree, so the meta card, toolbar, and grid shimmer independently but in sync (shared `loading` source). The grid needs `data-shimmer-no-children` (see below).
+- **`[showReloadingState]="false"`** keeps the content mounted during a reload so the `overlay` glint can sweep over it (stale-while-revalidate).
+- **First load** shows the wrapper's normal spinner (the `#content`, and its `<phantom-ui>`, only render once data resolves). The shimmer appears on **refresh**.
+- The page component needs `schemas: [CUSTOM_ELEMENTS_SCHEMA]` and `import '@aejkatappaja/phantom-ui'`.
 - `animation="shimmer"` is the moving sweep. (`"pulse"` only dims — that is *not* the shimmer.)
-
-The wrapper imports the web component (`import "@aejkatappaja/phantom-ui"`) and sets `schemas: [CUSTOM_ELEMENTS_SCHEMA]`.
+- The `phantom-ui` host is `position: relative; overflow: hidden` so its absolutely-positioned overlay is contained.
 
 ### Theme-adaptive shimmer
 
-phantom-ui is styled through its CSS custom properties, derived from `--color-text` so the shimmer is **darker on light themes and lighter on dark themes** automatically — no per-theme config:
+phantom-ui is styled through its CSS custom properties, set on the `phantom-ui` element **in the page's styles** (where the element lives). They derive from `--color-text`, so the shimmer is **darker on light themes and lighter on dark themes** automatically — no per-theme config:
 
 ```scss
 phantom-ui {
-  --shimmer-bg:              color-mix(in srgb, var(--color-text) 12%, transparent);
-  --shimmer-color:           color-mix(in srgb, var(--color-text) 26%, transparent);
+  --shimmer-bg:              color-mix(in srgb, var(--color-text) 8%,  transparent);
+  --shimmer-color:           color-mix(in srgb, var(--color-text) 20%, transparent);
   --shimmer-duration:        1.4s;
-  --phantom-content-opacity: 0.55;   /* dim level of the underlying content in overlay mode */
+  --phantom-content-opacity: 0.85;   /* how visible the underlying controls stay in overlay mode */
 }
 ```
 
-Any theme can override these `--shimmer-*` vars in its own file for a bespoke look.
+### AG Grid — shimmer with `data-shimmer-no-children` (+ two guards)
 
-### AG Grid caveat — `data-shimmer-no-children`
+The grid **is** wrapped in `<phantom-ui>`, but AG Grid needs care because it manages its own rendering/virtualization/sizing:
 
-phantom-ui shimmers by measuring **leaf** DOM elements. AG Grid's virtualized rows / transformed cells don't present as normal measurable leaves, so the grid would show no shimmer. The fix is phantom-ui's `data-shimmer-no-children` attribute, which captures the grid as a **single** shimmer block:
+1. **`data-shimmer-no-children`** on the `<ag-grid-angular>` — AG Grid's virtualized cells aren't measurable leaves, so this captures the whole grid as **one** shimmer block instead of recursing.
+2. **Stable content view** — the wrapper renders `#content` in one location (see below), so the grid isn't torn down / rebuilt when the status flips `resolved ↔ reloading`. Without this the grid visibly blinks.
+3. **Loading-only scrollbar clip** — while `phantom-ui[loading]`, AG Grid can transiently flip its internal scroll bars on; a scoped `::ng-deep phantom-ui[loading] .ag-body-*` rule in the page hides them during loading.
 
-```html
-<ag-grid-angular data-shimmer-no-children … />
-```
+The grid **also** signals refresh with its built-in cell-change flash (`enableCellChangeFlash: true` + stable `getRowId`), which pairs well with the overlay.
 
-### Making the loader visible
+### Making the shimmer visible
 
 A fast response can flash the loader for a few milliseconds. `HttpClientData` accepts a `delay` (ms) that holds the loading/reloading state, so the shimmer is actually seen. The Summary grid uses `delay: 1200` on both initial load and toolbar refresh.
 
