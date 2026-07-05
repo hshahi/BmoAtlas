@@ -7,32 +7,88 @@
 ## Table of Contents
 
 1. [Overview](#overview)
-2. [File Map](#file-map)
-3. [Entry Point — `theme.css`](#entry-point--themecss)
-4. [CSS Layers — Cascade Control](#css-layers--cascade-control)
-5. [Design Tokens — `_tokens.css`](#design-tokens--_tokenscss)
-6. [Reset — `_reset.css`](#reset--_resetcss)
-7. [Base — `_base.css`](#base--_basecss)
-8. [Layout — `_layout.css`](#layout--_layoutcss)
-9. [Components — `_components.css`](#components--_componentscss)
-10. [Utilities — `_utilities.css`](#utilities--_utilitiescss)
-11. [Dark Theme — `data-theme` Attribute](#dark-theme--data-theme-attribute)
-12. [FOUC Prevention — Inline Script](#fouc-prevention--inline-script)
-13. [ThemeService — Runtime Toggle](#themeservice--runtime-toggle)
-14. [How MFEs Consume the Theme](#how-mfes-consume-the-theme)
-15. [Best Practices Summary](#best-practices-summary)
+2. [How It All Works Together](#how-it-all-works-together)
+3. [File Map](#file-map)
+4. [Entry Point — `theme.css`](#entry-point--themecss)
+5. [CSS Layers — Cascade Control](#css-layers--cascade-control)
+6. [Design Tokens — `_tokens.css`](#design-tokens--_tokenscss)
+7. [Reset — `_reset.css`](#reset--_resetcss)
+8. [Base — `_base.css`](#base--_basecss)
+9. [Layout — `_layout.css`](#layout--_layoutcss)
+10. [Components — `_components.css`](#components--_componentscss)
+11. [Utilities — `_utilities.css`](#utilities--_utilitiescss)
+12. [Themes — `data-theme` Attribute](#themes--data-theme-attribute)
+13. [FOUC Prevention — Inline Script](#fouc-prevention--inline-script)
+14. [ThemeService — Runtime Toggle](#themeservice--runtime-toggle)
+15. [AG Grid Integration](#ag-grid-integration)
+16. [How the Shell & Features Consume the Theme](#how-the-shell--features-consume-the-theme)
+17. [Best Practices Summary](#best-practices-summary)
 
 ---
 
 ## Overview
 
-BmoAtlas uses a **token-driven, layered CSS architecture** shared across the shell and all micro-frontends. The system is designed around three principles:
+BmoAtlas is a **single Angular application** — a `shell` (`projects/shell`) that lazy-loads feature routes (`projects/features/*`) and shares two libraries (`libs/core`, `libs/shared`). All of it renders into **one document**, so there is exactly one set of styles and one active theme at a time.
+
+The styling system is **token-driven and layered**, built around four principles:
 
 | Principle | How |
 |-----------|-----|
-| **Single source of truth** | All colours, spacing, typography, and shadows are defined once in `_tokens.css` as CSS custom properties |
-| **Predictable cascade** | `@layer` declarations guarantee specificity order regardless of import order |
-| **Zero-JS dark mode** | Theme switching is pure CSS — the `data-theme="dark"` attribute on `<html>` swaps token values; no JavaScript re-render needed |
+| **Single source of truth** | Every colour, space, font, radius, and shadow is a CSS custom property defined once in `libs/shared/src/styles` |
+| **Predictable cascade** | `@layer` declarations fix specificity order regardless of import order — no `!important`, ever |
+| **One switch, everything follows** | A single `data-theme` attribute on `<html>` swaps the semantic token values; every element, component, utility, **and the AG Grid** re-colours from those same variables |
+| **Zero-JS re-render** | Theme switching is pure CSS variable substitution — Angular components are never re-rendered when the theme changes |
+
+---
+
+## How It All Works Together
+
+Everything hangs off **one idea**: components never hard-code colours — they read *semantic tokens* (`var(--color-primary)`, `var(--toolbar-bg)`, …). A theme is just a different set of values for those tokens. Switch the token values and the entire UI — shell chrome, lazy features, buttons, the data grid — repaints instantly, because they're all reading the same variables.
+
+Here is the end-to-end flow, from raw values to a themed pixel on screen:
+
+```
+ ┌──────────────────────────────────────────────────────────────────────┐
+ │ 1. PRIMITIVE TOKENS            _tokens.css  :root                      │
+ │    --bmo-navy, --bmo-blue, spacing, radii, fonts…  (raw, never change) │
+ └───────────────────────────────┬──────────────────────────────────────┘
+                                  │ consumed by
+ ┌───────────────────────────────▼──────────────────────────────────────┐
+ │ 2. SEMANTIC TOKENS (default = LIGHT)   _tokens.css  :root              │
+ │    --color-bg, --color-text, --color-primary, --toolbar-bg,           │
+ │    --card-*, --btn-primary-*, --input-*  (describe PURPOSE)           │
+ └───────────────────────────────┬──────────────────────────────────────┘
+                                  │ overridden per theme
+ ┌───────────────────────────────▼──────────────────────────────────────┐
+ │ 3. THEME OVERRIDES            themes/_dark.css, _nord.css, …           │
+ │    :root[data-theme="nord"] { --color-bg: #2e3440; … }                │
+ │    Only the semantic layer changes; primitives stay put.              │
+ └───────────────────────────────┬──────────────────────────────────────┘
+                                  │ the ACTIVE set is chosen by…
+ ┌───────────────────────────────▼──────────────────────────────────────┐
+ │ 4. THE SWITCH                 <html data-theme="nord">                 │
+ │    • Before paint: inline FOUC script in index.html reads localStorage │
+ │    • At runtime:   ThemeService sets the attribute (signal + effect)   │
+ └───────────────────────────────┬──────────────────────────────────────┘
+                                  │ read (at use-time) by every consumer
+ ┌───────────────────────────────▼──────────────────────────────────────┐
+ │ 5. CONSUMERS  (all read the SAME var(--…), so all re-colour at once)   │
+ │    • @layer base/layout/components/utilities  (shared CSS)             │
+ │    • Angular component styles       var(--color-text) …               │
+ │    • Lazy feature routes            (same document → same :root)       │
+ │    • AG Grid theme                  params mapped to var(--…)          │
+ └────────────────────────────────────────────────────────────────────── ┘
+```
+
+**Why this composes cleanly:**
+
+- **Primitive → semantic split** means a theme file is tiny — it only restates the ~30 semantic tokens, never the raw palette or the hundreds of component references.
+- **CSS custom properties resolve at use-time, not parse-time.** When `data-theme` flips, the browser re-resolves every `var(--…)` in place. No stylesheet reload, no Angular change detection, no component re-render.
+- **`@layer` guarantees order** so a theme override on `:root[data-theme]` and a utility class never fight — the cascade is deterministic.
+- **One document, one theme.** Because features are lazy chunks inside the shell (not separate apps), they automatically inherit the shell's `:root` tokens — there is nothing to wire per feature.
+- **Third-party UI joins the same system.** AG Grid's Theming API params are set to `var(--color-*)`, so the grid is not a special case — it re-themes through the exact same switch as everything else.
+
+The rest of this document details each stage.
 
 ---
 
@@ -70,7 +126,7 @@ Files prefixed with `_` are **partials** — they are never imported directly by
 
 1. Create `themes/_<name>.css` containing a single `:root[data-theme="<name>"] { … }` block that overrides the semantic tokens (and, for a metallic look, the `--card-*` / `--btn-primary-*` / `--input-*` tokens).
 2. Add one `@import './themes/_<name>.css';` line to `theme.css`.
-3. Register `<name>` in `THEMES` (and the `Theme` union) in `theme.service.ts`, add a toolbar icon case, a Settings button, and the `index.html` FOUC allow-lists.
+3. Register `<name>` in `THEMES` (and the `Theme` union) in `theme.service.ts`, add a toolbar icon case, a Settings button, and the shell `index.html` FOUC allow-list. (These are the only places that enumerate themes; the CSS adapts automatically.)
 
 ---
 
@@ -99,17 +155,14 @@ Files prefixed with `_` are **partials** — they are never imported directly by
 | **Layer order declared first** | The `@layer` statement at the top guarantees cascade order even if imports are reordered or new layers are added later |
 | **Tokens outside layers** | Custom properties defined in `:root` must be available to all layers, so `_tokens.css` is imported outside any `@layer` block |
 
-### How Apps Consume It
+### How the Shell Consumes It
 
 ```css
-/* apps/atlas/src/styles.css */
-@import '@shared/styles/theme.css';
-
-/* apps/mfe-stocks/src/styles.css */
+/* projects/shell/src/styles.css */
 @import '@shared/styles/theme.css';
 ```
 
-The `@shared` path alias is configured in `tsconfig.json` and resolved by the Angular build system.
+The `@shared` path alias is configured in `tsconfig.json` and resolved by the Angular build system. Lazy-loaded feature routes (`projects/features/*`) render inside the shell, so they inherit the same `:root` tokens automatically — no per-feature style import needed.
 
 ---
 
@@ -424,7 +477,7 @@ Design tokens are the **single source of truth** for all visual values. They are
 }
 ```
 
-**Why `container-type: inline-size`**: Every card is a CSS container query context. Child components can use `@container` queries to adapt their layout based on the card's width, not the viewport width. This is critical for micro-frontends where the same component may appear in different-sized containers.
+**Why `container-type: inline-size`**: Every card is a CSS container query context. Child components can use `@container` queries to adapt their layout based on the card's width, not the viewport width. This lets the same feature component render correctly whether it's in a wide main area or a narrow panel.
 
 ### Buttons
 
@@ -463,7 +516,7 @@ Design tokens are the **single source of truth** for all visual values. They are
 
 **Why `outline: none` + `box-shadow`**: The default browser outline doesn't respect `border-radius`. A `box-shadow` ring follows the element's shape and can be colour-matched to the design system. The 3px spread with 25% opacity creates a subtle but visible focus indicator that meets WCAG 2.2 focus-visible requirements.
 
-**Why `.ng-invalid.ng-touched`**: Angular adds these classes automatically to form controls. Styling them in the shared CSS means every form input across every MFE gets consistent validation styling without any component-level CSS.
+**Why `.ng-invalid.ng-touched`**: Angular adds these classes automatically to form controls. Styling them in the shared CSS means every form input across the shell and all feature routes gets consistent validation styling without any component-level CSS.
 
 ---
 
@@ -564,14 +617,17 @@ User clicks toggle → ThemeService.toggle()
 
 ## FOUC Prevention — Inline Script
 
-Each `index.html` contains an inline `<script>` in the `<head>`:
+The shell's `index.html` (`projects/shell/src/index.html`) contains an inline `<script>` in the `<head>`:
 
 ```html
 <script>
   (function() {
     try {
       var theme = localStorage.getItem('bmo-atlas-theme');
-      if (theme === 'dark' || theme === 'light') {
+      var known = ['light','dark','silver','silver-shine','midnight','platinum',
+        'chrome','titanium','nord','dracula','tokyo-night','high-contrast',
+        'catppuccin','merged-blue'];
+      if (known.indexOf(theme) !== -1) {
         document.documentElement.setAttribute('data-theme', theme);
       } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.setAttribute('data-theme', 'dark');
@@ -592,9 +648,9 @@ Each `index.html` contains an inline `<script>` in the `<head>`:
 | **IIFE wrapper** | Prevents variable leakage into the global scope |
 | **No external dependency** | This script runs before Angular bootstraps — it cannot depend on any framework code |
 
-### Why Every MFE Has This Script
+### Why the Allow-List Matches `THEMES`
 
-In a micro-frontend architecture, each MFE can be loaded independently (e.g., during development or in a standalone deployment). The inline script ensures the correct theme is applied even when the MFE runs outside the shell.
+The script's `known` array must stay in sync with the `THEMES` array in `theme.service.ts` — both are the single gate that decides whether a stored value is a valid theme. If they drift, a saved theme could be applied before paint but then rejected by the service (or vice-versa). When you add a theme, update both.
 
 ---
 
@@ -603,12 +659,15 @@ In a micro-frontend architecture, each MFE can be loaded independently (e.g., du
 ```typescript
 // libs/shared/src/services/theme/theme.service.ts
 
-export type Theme = 'light' | 'dark' | 'silver' | 'midnight';
+export type Theme =
+  | 'light' | 'dark' | 'silver' | 'silver-shine' | 'midnight' | 'platinum'
+  | 'chrome' | 'titanium' | 'nord' | 'dracula' | 'tokyo-night'
+  | 'high-contrast' | 'catppuccin' | 'merged-blue';
 
 const STORAGE_KEY = 'bmo-atlas-theme';
 const THEMES: readonly Theme[] = [
-  'light', 'dark', 'silver', 'midnight', 'platinum', 'chrome', 'titanium',
-  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin',
+  'light', 'dark', 'silver', 'silver-shine', 'midnight', 'platinum', 'chrome',
+  'titanium', 'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin', 'merged-blue',
 ];
 
 @Injectable({ providedIn: 'root' })
@@ -651,36 +710,90 @@ export class ThemeService {
 |----------|--------|
 | **Signal-based state** | `resolved` is an Angular signal — any component reading it reactively updates when the theme changes |
 | **`effect()` for DOM sync** | The effect automatically applies the theme to the DOM whenever the signal changes — no manual subscription management |
-| **`providedIn: 'root'`** | Singleton service shared across the shell and all MFEs via Angular's DI tree |
+| **`providedIn: 'root'`** | Singleton service shared across the shell and all lazy feature routes via Angular's DI tree |
 | **`isPlatformBrowser` guard** | Prevents `localStorage` and `document` access during SSR (server-side rendering) |
 | **Matches inline script key** | The `STORAGE_KEY` constant (`'bmo-atlas-theme'`) matches the key used in the `index.html` inline script — they must stay in sync |
 
 ---
 
-## How MFEs Consume the Theme
+## AG Grid Integration
+
+The data grids in the Stocks feature use **AG Grid Community**, wired into the *same* token system so they re-theme with every `data-theme` — no per-theme grid config.
+
+`libs/shared/src/ag-grid/atlas-grid.ts` defines one theme via the AG Grid **Theming API**, mapping each grid param to a BmoAtlas token:
+
+```typescript
+export const atlasGridTheme = themeQuartz.withParams({
+  backgroundColor: 'var(--color-bg-surface)',
+  foregroundColor: 'var(--color-text)',
+  borderColor: 'var(--color-border)',
+  headerBackgroundColor: 'var(--color-bg-muted)',
+  headerTextColor: 'var(--color-text-secondary)',
+  rowHoverColor: 'var(--color-bg-muted)',
+  selectedRowBackgroundColor: 'color-mix(in srgb, var(--color-primary) 16%, transparent)',
+  accentColor: 'var(--color-primary)',
+  fontFamily: 'var(--font-sans)',
+});
+
+// Called once in projects/shell/src/main.ts, before bootstrap:
+export function registerAtlasGrid(): void {
+  ModuleRegistry.registerModules([AllCommunityModule]);
+  provideGlobalGridOptions({ theme: atlasGridTheme });
+}
+```
+
+### Why This Is Best Practice
+
+| Decision | Reason |
+|----------|--------|
+| **Params reference `var(--…)`** | AG Grid emits each param as a CSS variable value, so `backgroundColor: 'var(--color-bg-surface)'` becomes `--ag-background-color: var(--color-bg-surface)` — it resolves at runtime and flips with `data-theme`, exactly like every other consumer |
+| **One theme, all app themes** | Because the params point at semantic tokens (which change per theme), a single grid theme covers light, dark, metallic, Merged Blue, Nord, Dracula, … with zero duplication |
+| **Global registration** | `provideGlobalGridOptions({ theme })` makes every grid in the app use it — individual grids don't set a theme |
+| **Community only** | `AllCommunityModule` — sorting, column/number/date filters, floating filters, quick-filter, pinned rows, cell-change flash, and CSV export are all free (no Enterprise licence) |
+
+### Per-theme fine-tuning (optional)
+
+The base theme is correct everywhere, but a specific theme can still override any AG Grid variable inside its own file:
+
+```css
+:root[data-theme="chrome"] {
+  --ag-header-background-color: #e6ebf0;
+}
+```
+
+Grid cells render in the light DOM, so shared utility classes (`.text-gain`, `.font-mono`) applied via AG Grid `cellClass` also work and stay theme-aware.
+
+---
+
+## How the Shell & Features Consume the Theme
 
 ```
 ┌─────────────────────────────────────────────────┐
 │  libs/shared/src/styles/theme.css               │
 │  (tokens + reset + base + layout + components   │
 │   + utilities)                                  │
-└──────────┬──────────┬──────────┬────────────────┘
-           │          │          │
-    ┌──────▼──┐ ┌─────▼────┐ ┌──▼──────────┐
-    │  atlas  │ │mfe-stocks│ │mfe-dashboard │ ...
-    │styles.css│ │styles.css│ │ styles.css  │
-    └─────────┘ └──────────┘ └─────────────┘
+└───────────────────────┬─────────────────────────┘
+                        │  @import (once)
+                 ┌──────▼───────┐
+                 │    shell     │  projects/shell/src/styles.css
+                 │  styles.css  │
+                 └──────┬───────┘
+                        │  lazy routes render inside the shell
+      ┌─────────────────┼─────────────────┐
+ ┌────▼─────┐     ┌─────▼────┐      ┌──────▼─────┐
+ │ dashboard│     │ settings │      │   stocks   │  projects/features/*
+ └──────────┘     └──────────┘      └────────────┘
 ```
 
-Each app's `styles.css` is a single line:
+The shell's `styles.css` is a single line:
 
 ```css
 @import '@shared/styles/theme.css';
 ```
 
 This means:
-- **All MFEs share identical tokens** — colours, spacing, and typography are consistent
-- **No CSS duplication** — the build system deduplicates shared styles
+- **The whole app shares identical tokens** — colours, spacing, and typography are consistent
+- **No CSS duplication** — feature routes are lazy chunks in the same document, so they reuse the shell's `:root` tokens; no extra style import
 - **Component-scoped styles** (Angular `styles` metadata) can reference any token via `var(--token-name)` because tokens are defined on `:root`
 
 ---
@@ -723,7 +836,7 @@ This means:
 | **`color-mix()` for hover states** | `_components.css` | Reduces token count; computed from existing tokens |
 | **`container-type: inline-size`** | `.card` in `_components.css` | Enables container queries for responsive components |
 | **`.sr-only` utility** | `_utilities.css` | Accessibility: visually hidden but screen-reader accessible |
-| **Angular validation classes** | `_components.css` | Consistent form validation styling across all MFEs |
+| **Angular validation classes** | `_components.css` | Consistent form validation styling across the shell and features |
 
 ### Accessibility
 

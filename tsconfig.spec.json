@@ -9,8 +9,8 @@
     "libs/**/*.ts",
     "libs/**/*.d.ts",
     "libs/**/*.spec.ts",
-    "apps/**/*.ts",
-    "apps/**/*.d.ts",
-    "apps/**/*.spec.ts"
+    "projects/**/*.ts",
+    "projects/**/*.d.ts",
+    "projects/**/*.spec.ts"
   ]
 }

@@ -8,7 +8,10 @@
       "@core/*": ["./libs/core/src/*"],
       "@core": ["./libs/core/src/index.ts"],
       "@shared/*": ["./libs/shared/src/*"],
-      "@shared": ["./libs/shared/src/index.ts"]
+      "@shared": ["./libs/shared/src/index.ts"],
+      "@features/dashboard": ["./projects/features/dashboard/routes.ts"],
+      "@features/settings": ["./projects/features/settings/routes.ts"],
+      "@features/stocks": ["./projects/features/stocks/routes.ts"]
     },
     "strict": true,
     "noImplicitOverride": true,

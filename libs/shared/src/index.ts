@@ -23,3 +23,6 @@ export { mockApiInterceptor } from './interceptors/mock-api.interceptor';
 
 // Handlers
 export { GlobalErrorHandler } from './handlers/global-error.handler';
+
+// AG Grid
+export { atlasGridTheme, registerAtlasGrid } from './ag-grid/atlas-grid';
