@@ -29,7 +29,7 @@ export interface IdleContext {
 	selector: 'load-wrapper-client-data',
 	imports: [CommonModule],
 	templateUrl: './load-wrapper-client-data.html',
-	styleUrl: './load-wrapper-client-data.scss',
+	styleUrl: './load-wrapper-client-data.css',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadWrapperClientData<T> {

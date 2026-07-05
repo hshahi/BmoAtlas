@@ -30,7 +30,7 @@ export interface IdleContext {
 	selector: 'load-wrapper',
 	imports: [CommonModule],
 	templateUrl: './load-wrapper.html',
-	styleUrl: './load-wrapper.scss',
+	styleUrl: './load-wrapper.css',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoadWrapper<T> {
