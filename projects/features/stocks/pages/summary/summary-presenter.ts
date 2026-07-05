@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, input, inject, signal, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, inject, signal, computed, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { AgGridAngular } from 'ag-grid-angular';
 import type {
@@ -10,7 +10,7 @@ import type {
   GetRowIdParams,
 } from 'ag-grid-community';
 import { HttpClientData } from '@core';
-import { LoadWrapperClientData, AtlasLoader } from '@shared';
+import { AtlasLoader } from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
 import '@aejkatappaja/phantom-ui';
 
@@ -34,7 +34,7 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
 
 @Component({
   selector: 'app-summary-presenter',
-  imports: [LoadWrapperClientData, AgGridAngular, AtlasLoader],
+  imports: [AgGridAngular, AtlasLoader],
   template: `
     <div class="summary">
       <div class="summary__header">
@@ -45,99 +45,102 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
         </div>
       </div>
 
-      <!-- showReloadingState=false keeps the content mounted during refresh so the
-           phantom-ui overlays below can shimmer over it. Each section is wrapped in
-           its own <phantom-ui>, all driven by the resource's reloading state. -->
-      <load-wrapper-client-data [source]="stockData()" [showReloadingState]="false">
-
-        <!-- First load — composed loader (the wrapper no longer ships a default). -->
-        <ng-template #loading>
-          <atlas-loader class="summary__first-load" message="Loading stock data…" />
-        </ng-template>
-
-        <ng-template #content let-data>
-          <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
-            <div class="summary__meta card">
-              <div class="summary__meta-item">
-                <span class="summary__meta-label">Symbol</span>
-                <span class="summary__meta-value">{{ data.meta.symbol }}</span>
-              </div>
-              <div class="summary__meta-item">
-                <span class="summary__meta-label">Last Refreshed</span>
-                <span class="summary__meta-value">{{ data.meta.lastRefreshed }}</span>
-              </div>
-              <div class="summary__meta-item">
-                <span class="summary__meta-label">Time Zone</span>
-                <span class="summary__meta-value">{{ data.meta.timeZone }}</span>
-              </div>
-              <div class="summary__meta-item">
-                <span class="summary__meta-label">Periods</span>
-                <span class="summary__meta-value">{{ data.entries.length }}</span>
-              </div>
+      <!-- Sections are rendered regardless of load state (data is empty until it
+           resolves), and each section drives its own loader from isPending() — so
+           the per-section loaders show on BOTH initial load and refresh. -->
+      @if (stockData().isError()) {
+        <div class="summary__error card">
+          <span class="summary__error-icon">⚠️</span>
+          <p>Failed to load stock data</p>
+          <p class="summary__error-detail">{{ stockData().error() }}</p>
+          <div class="summary__error-actions">
+            <button class="btn" (click)="stockData().reload()">Retry</button>
+            @if (onLoadLocal()) {
+              <button class="btn btn--local" (click)="onLoadLocal()!()">Use Local Data</button>
+            }
+          </div>
+        </div>
+      } @else {
+        <!-- Meta card — shimmer overlay -->
+        <phantom-ui [attr.loading]="stockData().isPending() ? '' : null" animation="shimmer" mode="overlay">
+          <div class="summary__meta card">
+            <div class="summary__meta-item">
+              <span class="summary__meta-label">Symbol</span>
+              <span class="summary__meta-value">{{ data()?.meta?.symbol }}</span>
             </div>
-          </phantom-ui>
-
-          <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
-            <div class="summary__toolbar">
-              <input
-                class="form-input summary__search"
-                type="text"
-                placeholder="Filter rows…"
-                [value]="quickFilter()"
-                (input)="onQuickFilter($event)"
-                aria-label="Filter table rows"
-              />
-              <button class="btn summary__export" (click)="exportCsv(data)">⬇ Export CSV</button>
+            <div class="summary__meta-item">
+              <span class="summary__meta-label">Last Refreshed</span>
+              <span class="summary__meta-value">{{ data()?.meta?.lastRefreshed }}</span>
             </div>
-          </phantom-ui>
-
-          <!-- data-shimmer-no-children: AG Grid's virtualized cells can't be measured
-               as leaves, so capture the whole grid as one shimmer block. -->
-          <atlas-loader [loading]="stockData().isReloading()">
-              <ag-grid-angular
-                class="summary__grid card"
-                data-shimmer-no-children
-                [rowData]="getTopEntries(data)"
-                [columnDefs]="columnDefs"
-                [defaultColDef]="defaultColDef"
-                [pinnedBottomRowData]="summaryRow(data)"
-                [quickFilterText]="quickFilter()"
-                [getRowId]="getRowId"
-                [domLayout]="'autoHeight'"
-                (gridReady)="onGridReady($event)"
-              />
-            </atlas-loader>
-
-          <!-- <phantom-ui [attr.loading]="stockData().isReloading() ? '' : null" animation="shimmer" mode="overlay">
-            <ag-grid-angular
-              class="summary__grid card"
-              data-shimmer-no-children
-              [rowData]="getTopEntries(data)"
-              [columnDefs]="columnDefs"
-              [defaultColDef]="defaultColDef"
-              [pinnedBottomRowData]="summaryRow(data)"
-              [quickFilterText]="quickFilter()"
-              [getRowId]="getRowId"
-              [domLayout]="'autoHeight'"
-              (gridReady)="onGridReady($event)"
-            />
-          </phantom-ui> -->
-        </ng-template>
-
-        <ng-template #error let-error="error" let-retry="retry">
-          <div class="summary__error card">
-            <span class="summary__error-icon">⚠️</span>
-            <p>Failed to load stock data</p>
-            <p class="summary__error-detail">{{ error }}</p>
-            <div class="summary__error-actions">
-              <button class="btn" (click)="retry()">Retry</button>
-              @if (onLoadLocal()) {
-                <button class="btn btn--local" (click)="onLoadLocal()!()">Use Local Data</button>
-              }
+            <div class="summary__meta-item">
+              <span class="summary__meta-label">Time Zone</span>
+              <span class="summary__meta-value">{{ data()?.meta?.timeZone }}</span>
+            </div>
+            <div class="summary__meta-item">
+              <span class="summary__meta-label">Periods</span>
+              <span class="summary__meta-value">{{ data()?.entries?.length }}</span>
             </div>
           </div>
-        </ng-template>
-      </load-wrapper-client-data>
+        </phantom-ui>
+
+        <!-- Toolbar — shimmer overlay -->
+        <phantom-ui [attr.loading]="stockData().isPending() ? '' : null" animation="shimmer" mode="overlay">
+          <div class="summary__toolbar">
+            <input
+              class="form-input summary__search"
+              type="text"
+              placeholder="Filter rows…"
+              [value]="quickFilter()"
+              (input)="onQuickFilter($event)"
+              aria-label="Filter table rows"
+            />
+            <button class="btn summary__export" (click)="exportCsv()">⬇ Export CSV</button>
+          </div>
+        </phantom-ui>
+        <!-- <atlas-loader [loading]="stockData().isPending()">
+          <div class="summary__toolbar">
+            <input
+              class="form-input summary__search"
+              type="text"
+              placeholder="Filter rows…"
+              [value]="quickFilter()"
+              (input)="onQuickFilter($event)"
+              aria-label="Filter table rows"
+            />
+            <button class="btn summary__export" (click)="exportCsv()">⬇ Export CSV</button>
+          </div>
+        </atlas-loader> -->
+
+        <!-- Grid — atlas-loader spinner overlay. min-height (see styles) keeps the
+             spinner visible on first load while the grid has no rows yet. -->
+        <phantom-ui [attr.loading]="stockData().isPending() ? '' : null" animation="shimmer" mode="overlay">
+             <ag-grid-angular
+            class="summary__grid card"
+            data-shimmer-no-children
+            [rowData]="rows()"
+            [columnDefs]="columnDefs"
+            [defaultColDef]="defaultColDef"
+            [pinnedBottomRowData]="pinnedRows()"
+            [quickFilterText]="quickFilter()"
+            [getRowId]="getRowId"
+            [domLayout]="'autoHeight'"
+            (gridReady)="onGridReady($event)"
+          />
+        </phantom-ui>
+        <!-- <atlas-loader class="summary__grid-loader" [loading]="stockData().isPending()">
+          <ag-grid-angular
+            class="summary__grid card"
+            [rowData]="rows()"
+            [columnDefs]="columnDefs"
+            [defaultColDef]="defaultColDef"
+            [pinnedBottomRowData]="pinnedRows()"
+            [quickFilterText]="quickFilter()"
+            [getRowId]="getRowId"
+            [domLayout]="'autoHeight'"
+            (gridReady)="onGridReady($event)"
+          />
+        </atlas-loader> -->
+      }
     </div>
   `,
   styles: [`
@@ -256,35 +259,22 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
       overflow: hidden;
     }
 
-    /* Standalone first-load loader needs height so the centered spinner shows. */
-    .summary__first-load {
+    /* The grid's loader wrapper. min-height keeps the loader visible on first load
+       while the grid has no rows yet (empty autoHeight grid collapses). */
+    .summary__grid-loader {
       display: block;
+      margin-bottom: var(--space-lg);
       min-height: 16rem;
     }
 
-    /* Each section is wrapped in <phantom-ui>; make the element a block so it
-       doesn't collapse, and space the sections like the old direct children.
-       position + overflow contain and clip phantom-ui's absolutely-positioned
-       shimmer overlay so it can't spawn stray scroll bars. */
+    /* Meta card + toolbar are wrapped in <phantom-ui>; make the element a block so
+       it doesn't collapse, and space the sections. position + overflow contain and
+       clip phantom-ui's absolutely-positioned shimmer overlay. */
     phantom-ui {
       display: block;
       position: relative;
       overflow: hidden;
       margin-bottom: var(--space-lg);
-    }
-
-    /* While shimmering, AG Grid re-measures and can flip its OWN internal scroll
-       bars on. They live inside the grid (below the host clip above), so clip them
-       here — only during loading (phantom-ui[loading]) and only for these grids.
-       ::ng-deep reaches AG Grid's runtime-generated DOM. */
-    :host ::ng-deep phantom-ui[loading] .ag-body-horizontal-scroll,
-    :host ::ng-deep phantom-ui[loading] .ag-body-vertical-scroll {
-      display: none;
-    }
-    :host ::ng-deep phantom-ui[loading] .ag-body-viewport,
-    :host ::ng-deep phantom-ui[loading] .ag-center-cols-viewport {
-      overflow: hidden;
-      scrollbar-width: none;
     }
 
     /* ── Shimmer loader tuning (phantom-ui) ─────────────────────────────
@@ -361,6 +351,18 @@ export class SummaryPresenter {
   /** Global quick-filter term (searches across all columns). */
   protected readonly quickFilter = signal('');
 
+  /** Resolved data (undefined until it loads) — sections render regardless. */
+  protected readonly data = computed(() => this.stockData().value());
+
+  /** Grid rows — empty until data arrives. */
+  protected readonly rows = computed<StockEntry[]>(() => this.data()?.entries.slice(0, 12) ?? []);
+
+  /** Pinned footer row (avg/total), empty until data arrives. */
+  protected readonly pinnedRows = computed<StockEntry[]>(() => {
+    const d = this.data();
+    return d ? this.summaryRow(d) : [];
+  });
+
   private gridApi: GridApi<StockEntry> | null = null;
 
   protected readonly defaultColDef: ColDef<StockEntry> = {
@@ -424,9 +426,9 @@ export class SummaryPresenter {
     this.quickFilter.set((event.target as HTMLInputElement).value);
   }
 
-  protected exportCsv(data: StockData): void {
+  protected exportCsv(): void {
     this.gridApi?.exportDataAsCsv({
-      fileName: `${data.meta.symbol || 'stock'}-summary.csv`,
+      fileName: `${this.data()?.meta.symbol || 'stock'}-summary.csv`,
     });
   }
 
