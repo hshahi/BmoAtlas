@@ -1,55 +1,13 @@
 <div class="data-status">
-@switch (true) {
 
-	<!-- Idle State (for HttpClientData before load) -->
-	@case (isIdle()) {
+@if (loader() === 'shimmer') {
+
+	<!-- ═══ Shimmer loader (phantom-ui overlay) ═══ -->
+	@if (isIdle()) {
 		@if (idleTemplate()) {
 			<ng-container *ngTemplateOutlet="idleTemplate(); context: idleContext()" />
 		}
-	}
-
-	<!-- Loading State -->
-	@case (isLoading()) {
-		@if (loadingTemplate()) {
-			<ng-container *ngTemplateOutlet="loadingTemplate()!" />
-		} @else {
-			<div class="data-status__loading">
-				<div class="data-status__spinner">
-					<svg viewBox="0 0 60 60" aria-hidden="true">
-						<circle class="data-status__arc data-status__arc--outer"
-							cx="30" cy="30" r="26" fill="none" stroke-width="3.5" stroke-linecap="round" />
-						<circle class="data-status__arc data-status__arc--inner"
-							cx="30" cy="30" r="16" fill="none" stroke-width="3.5" stroke-linecap="round" />
-					</svg>
-				</div>
-				<span>Loading...</span>
-			</div>
-		}
-	}
-
-	<!-- Reloading State -->
-	@case (isReloading() && showReloadingState()) {
-		@if (reloadingTemplate()) {
-			<ng-container *ngTemplateOutlet="reloadingTemplate()!; context: reloadingContext()" />
-		} @else if (contentTemplate() && contentContext()) {
-			<div class="data-status__reloading-wrapper">
-				<div class="data-status__reloading-overlay">
-					<div class="data-status__spinner data-status__spinner--small">
-						<svg viewBox="0 0 60 60" aria-hidden="true">
-							<circle class="data-status__arc data-status__arc--outer"
-								cx="30" cy="30" r="26" fill="none" stroke-width="3.5" stroke-linecap="round" />
-							<circle class="data-status__arc data-status__arc--inner"
-								cx="30" cy="30" r="16" fill="none" stroke-width="3.5" stroke-linecap="round" />
-						</svg>
-					</div>
-				</div>
-				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
-			</div>
-		}
-	}
-
-	<!-- Error State -->
-	@case (isError()) {
+	} @else if (isError()) {
 		@if (errorTemplate()) {
 			<ng-container *ngTemplateOutlet="errorTemplate()!; context: errorContext()" />
 		} @else {
@@ -59,10 +17,7 @@
 				<button class="data-status__retry-btn" (click)="reload()">Retry</button>
 			</div>
 		}
-	}
-
-	<!-- Empty State -->
-	@case (isEmpty()) {
+	} @else if (isEmpty()) {
 		@if (emptyTemplate()) {
 			<ng-container *ngTemplateOutlet="emptyTemplate()!" />
 		} @else {
@@ -70,18 +25,125 @@
 				<p>No data available</p>
 			</div>
 		}
+	} @else {
+		<!-- Resolved / loading / reloading. On refresh (data present) the shimmer
+		     glints OVER the real content; on first load it renders a skeleton from
+		     the placeholder structure below. -->
+		<phantom-ui
+			[attr.loading]="isBusy() ? '' : null"
+			animation="shimmer"
+			[attr.mode]="hasValue() ? 'overlay' : 'skeleton'"
+		>
+			@if (contentTemplate() && contentContext()) {
+				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+			} @else {
+				<div class="data-status__shimmer-placeholder" aria-hidden="true">
+					<div class="data-status__sk data-status__sk--title"></div>
+					<div class="data-status__sk-row">
+						<div class="data-status__sk data-status__sk--chip"></div>
+						<div class="data-status__sk data-status__sk--chip"></div>
+						<div class="data-status__sk data-status__sk--chip"></div>
+						<div class="data-status__sk data-status__sk--chip"></div>
+					</div>
+					<div class="data-status__sk data-status__sk--line"></div>
+					<div class="data-status__sk data-status__sk--line"></div>
+					<div class="data-status__sk data-status__sk--line"></div>
+					<div class="data-status__sk data-status__sk--line"></div>
+					<div class="data-status__sk data-status__sk--line"></div>
+					<div class="data-status__sk data-status__sk--line"></div>
+				</div>
+			}
+		</phantom-ui>
 	}
 
-	<!-- Success/Content State -->
-	@case (showContent()) {
-		@if (contentTemplate() && contentContext()) {
-			<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+} @else {
+
+	<!-- ═══ Default loader (spinner) ═══ -->
+	@switch (true) {
+
+		<!-- Idle State (for HttpClientData before load) -->
+		@case (isIdle()) {
+			@if (idleTemplate()) {
+				<ng-container *ngTemplateOutlet="idleTemplate(); context: idleContext()" />
+			}
+		}
+
+		<!-- Loading State -->
+		@case (isLoading()) {
+			@if (loadingTemplate()) {
+				<ng-container *ngTemplateOutlet="loadingTemplate()!" />
+			} @else {
+				<div class="data-status__loading">
+					<div class="data-status__spinner">
+						<svg viewBox="0 0 60 60" aria-hidden="true">
+							<circle class="data-status__arc data-status__arc--outer"
+								cx="30" cy="30" r="26" fill="none" stroke-width="3.5" stroke-linecap="round" />
+							<circle class="data-status__arc data-status__arc--inner"
+								cx="30" cy="30" r="16" fill="none" stroke-width="3.5" stroke-linecap="round" />
+						</svg>
+					</div>
+					<span>Loading...</span>
+				</div>
+			}
+		}
+
+		<!-- Reloading State -->
+		@case (isReloading() && showReloadingState()) {
+			@if (reloadingTemplate()) {
+				<ng-container *ngTemplateOutlet="reloadingTemplate()!; context: reloadingContext()" />
+			} @else if (contentTemplate() && contentContext()) {
+				<div class="data-status__reloading-wrapper">
+					<div class="data-status__reloading-overlay">
+						<div class="data-status__spinner data-status__spinner--small">
+							<svg viewBox="0 0 60 60" aria-hidden="true">
+								<circle class="data-status__arc data-status__arc--outer"
+									cx="30" cy="30" r="26" fill="none" stroke-width="3.5" stroke-linecap="round" />
+								<circle class="data-status__arc data-status__arc--inner"
+									cx="30" cy="30" r="16" fill="none" stroke-width="3.5" stroke-linecap="round" />
+							</svg>
+						</div>
+					</div>
+					<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+				</div>
+			}
+		}
+
+		<!-- Error State -->
+		@case (isError()) {
+			@if (errorTemplate()) {
+				<ng-container *ngTemplateOutlet="errorTemplate()!; context: errorContext()" />
+			} @else {
+				<div class="data-status__error">
+					<span class="data-status__error-icon">⚠</span>
+					<p>Something went wrong</p>
+					<button class="data-status__retry-btn" (click)="reload()">Retry</button>
+				</div>
+			}
+		}
+
+		<!-- Empty State -->
+		@case (isEmpty()) {
+			@if (emptyTemplate()) {
+				<ng-container *ngTemplateOutlet="emptyTemplate()!" />
+			} @else {
+				<div class="data-status__empty">
+					<p>No data available</p>
+				</div>
+			}
+		}
+
+		<!-- Success/Content State -->
+		@case (showContent()) {
+			@if (contentTemplate() && contentContext()) {
+				<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+			}
 		}
 	}
-}
 
-<!-- Reloading without separate template show content with overlay -->
-@if (isReloading() && !showReloadingState() && contentTemplate() && contentContext()) {
-	<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+	<!-- Reloading without separate template show content with overlay -->
+	@if (isReloading() && !showReloadingState() && contentTemplate() && contentContext()) {
+		<ng-container *ngTemplateOutlet="contentTemplate()!; context: contentContext()!" />
+	}
+
 }
 </div>

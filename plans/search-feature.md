@@ -1,10 +1,12 @@
 # Search Feature — App & Page Discovery
 
 > **Status:** ✅ Implemented — all components, routes, tests, and assets are in place.
+>
+> **Note on terminology:** this doc predates the migration away from micro-frontends. Where it says "MFE apps", read **feature areas** (`projects/features/*`) — lazy-loaded route bundles inside the single `shell` application. The search feature itself is unchanged; it lives in the shell (`projects/shell/src/app/pages/search`).
 
 ## Overview
 
-A search feature in the Atlas shell that allows users to discover functionality across all MFE apps, even those they don't have access to. Users click a search button next to `ibg\user` in the side menu, which navigates to a search page. As they type, results are filtered from a static JSON catalog containing metadata about every app and page.
+A search feature in the Atlas shell that lets users discover functionality across all feature areas, even those they don't have access to. Users click a search button next to `ibg\user` in the side menu, which navigates to a search page. As they type, results are filtered from a static JSON catalog containing metadata about every app and page.
 
 ## Architecture
 

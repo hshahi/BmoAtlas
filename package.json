@@ -17,6 +17,7 @@
   "private": true,
   "packageManager": "npm@11.6.2",
   "dependencies": {
+    "@aejkatappaja/phantom-ui": "^1.4.0",
     "@angular/animations": "^21.2.13",
     "@angular/common": "^21.2.0",
     "@angular/compiler": "^21.2.0",

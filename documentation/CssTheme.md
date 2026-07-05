@@ -21,8 +21,9 @@
 13. [FOUC Prevention — Inline Script](#fouc-prevention--inline-script)
 14. [ThemeService — Runtime Toggle](#themeservice--runtime-toggle)
 15. [AG Grid Integration](#ag-grid-integration)
-16. [How the Shell & Features Consume the Theme](#how-the-shell--features-consume-the-theme)
-17. [Best Practices Summary](#best-practices-summary)
+16. [Loading States — Spinner & Shimmer](#loading-states--spinner--shimmer)
+17. [How the Shell & Features Consume the Theme](#how-the-shell--features-consume-the-theme)
+18. [Best Practices Summary](#best-practices-summary)
 
 ---
 
@@ -762,6 +763,68 @@ The base theme is correct everywhere, but a specific theme can still override an
 ```
 
 Grid cells render in the light DOM, so shared utility classes (`.text-gain`, `.font-mono`) applied via AG Grid `cellClass` also work and stay theme-aware.
+
+---
+
+## Loading States — Spinner & Shimmer
+
+`load-wrapper` and `load-wrapper-client-data` (in `libs/shared`) render the async lifecycle (idle → loading → reloading → resolved → error/empty) and expose a `loader` input to choose the busy indicator:
+
+| `loader` | Indicator |
+|----------|-----------|
+| `'default'` _(default)_ | The built-in dual-arc spinner |
+| `'shimmer'` | A [phantom-ui](https://www.npmjs.com/package/@aejkatappaja/phantom-ui) shimmer that measures the DOM and animates skeleton blocks |
+
+```html
+<!-- Summary page opts in: -->
+<load-wrapper-client-data [source]="stockData()" loader="shimmer"> … </load-wrapper-client-data>
+```
+
+### How the shimmer mode behaves
+
+The wrapper renders `<phantom-ui>` around the content and switches technique by whether data exists yet:
+
+```html
+<phantom-ui
+  [attr.loading]="isBusy() ? '' : null"
+  animation="shimmer"
+  [attr.mode]="hasValue() ? 'overlay' : 'skeleton'">
+  …content, or a generic skeleton placeholder on first load…
+</phantom-ui>
+```
+
+- **First load** (no data) → `mode="skeleton"` over a generic placeholder structure (title bar, chip row, lines) so phantom-ui has real shapes to measure and shimmer.
+- **Refresh / reload** (data present) → `mode="overlay"`: the real content stays visible and dimmed while a light glint sweeps over it — stale-while-revalidate.
+- `animation="shimmer"` is the moving sweep. (`"pulse"` only dims — that is *not* the shimmer.)
+
+The wrapper imports the web component (`import "@aejkatappaja/phantom-ui"`) and sets `schemas: [CUSTOM_ELEMENTS_SCHEMA]`.
+
+### Theme-adaptive shimmer
+
+phantom-ui is styled through its CSS custom properties, derived from `--color-text` so the shimmer is **darker on light themes and lighter on dark themes** automatically — no per-theme config:
+
+```scss
+phantom-ui {
+  --shimmer-bg:              color-mix(in srgb, var(--color-text) 12%, transparent);
+  --shimmer-color:           color-mix(in srgb, var(--color-text) 26%, transparent);
+  --shimmer-duration:        1.4s;
+  --phantom-content-opacity: 0.55;   /* dim level of the underlying content in overlay mode */
+}
+```
+
+Any theme can override these `--shimmer-*` vars in its own file for a bespoke look.
+
+### AG Grid caveat — `data-shimmer-no-children`
+
+phantom-ui shimmers by measuring **leaf** DOM elements. AG Grid's virtualized rows / transformed cells don't present as normal measurable leaves, so the grid would show no shimmer. The fix is phantom-ui's `data-shimmer-no-children` attribute, which captures the grid as a **single** shimmer block:
+
+```html
+<ag-grid-angular data-shimmer-no-children … />
+```
+
+### Making the loader visible
+
+A fast response can flash the loader for a few milliseconds. `HttpClientData` accepts a `delay` (ms) that holds the loading/reloading state, so the shimmer is actually seen. The Summary grid uses `delay: 1200` on both initial load and toolbar refresh.
 
 ---
 

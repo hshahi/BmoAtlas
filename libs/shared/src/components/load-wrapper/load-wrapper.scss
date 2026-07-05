@@ -2,6 +2,29 @@
 	position: relative;
 	width: 100%;
 
+	// Shimmer placeholder — a generic skeleton structure phantom-ui measures on
+	// first load (when there is no data to render yet).
+	&__shimmer-placeholder {
+		width: 100%;
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	&__sk {
+		border-radius: var(--radius-md, 6px);
+		background: var(--color-bg-muted, rgba(128, 128, 128, 0.15));
+		height: 1rem;
+
+		&--title { width: 40%; height: 1.75rem; }
+		&--line  { width: 100%; }
+		&--chip  { flex: 1; height: 3rem; }
+	}
+	&__sk-row {
+		display: flex;
+		gap: 0.75rem;
+	}
+
 	// Loading State
 	&__loading {
 		display: flex;
@@ -89,6 +112,30 @@
 		color: var(--text-secondary, #666);
 		text-align: center;
 	}
+}
+
+// ── Shimmer loader tuning (phantom-ui) ──────────────────────────────
+// These custom properties are set HERE, on the phantom-ui element, and are
+// read by the phantom-ui web component. Change them to tune the shimmer.
+// Colours derive from --color-text, so they stay theme-adaptive (darker on
+// light themes, lighter on dark themes) automatically.
+//
+//   --shimmer-bg              Background of each shimmer block. Lower the
+//                             color-mix % for a fainter / more subtle shimmer.
+//   --shimmer-color           Colour of the moving sweep (used by
+//                             animation="shimmer"). Lower % = subtler.
+//   --shimmer-duration        Animation cycle time. Higher = calmer.
+//   --phantom-content-opacity Overlay mode only — how visible the underlying
+//                             content/controls stay during a refresh.
+//                             Higher (→ 1) = controls more visible; lower = more dimmed.
+//
+// NOTE: the animation TYPE ("shimmer" | "pulse" | "breathe" | "solid") is set
+// via the `animation` attribute on <phantom-ui> in the wrapper's .html, not here.
+phantom-ui {
+	--shimmer-bg: color-mix(in srgb, var(--color-text, #888) 5%, transparent);
+	--shimmer-color: color-mix(in srgb, var(--color-text, #888) 26%, transparent);
+	--shimmer-duration: 1.4s;
+	--phantom-content-opacity: 0.85; // raised from 0.55 so controls stay clearly visible
 }
 
 @keyframes data-status-spin {

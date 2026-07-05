@@ -22,6 +22,8 @@ export class SummaryContainer extends ComponentBase implements OnInit {
   readonly stockData = new HttpClientData<StockData>(this.injector, {
     url: API_URL,
     parse: parseMonthlyResponse,
+    // Artificial delay so the shimmer loader is visible on load & refresh.
+    delay: 1200,
   });
 
   ngOnInit(): void {

@@ -1,5 +1,7 @@
 # BmoAtlas — Comprehensive Architectural Proposal
 
+> ⚠️ **Historical / superseded.** This document captures the *original* proposal, which used a micro-frontend architecture (Native Federation, multiple `apps/*` remotes). The project has since been consolidated into a **single Angular application** (`projects/shell`) that lazy-loads feature areas (`projects/features/*`) with shared libraries (`libs/*`) — no micro-frontends or federation. For the current, accurate setup see [configuration.md](../documentation/configuration.md), [HowToLaunch.md](../documentation/HowToLaunch.md), and [CssTheme.md](../documentation/CssTheme.md). The sections below (especially "Native Federation Strategy" and the multi-app workspace structure) are kept only as design history.
+
 ## Table of Contents
 
 1. [Architectural Summary](#1-architectural-summary)

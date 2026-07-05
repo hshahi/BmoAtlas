@@ -47,6 +47,7 @@ Without `LoadWrapper`, every component that consumes an `HttpData` resource must
 | `source` | `HttpData<T>` | **required** | The data source whose status drives which template is rendered. |
 | `emptyWhen` | `(data: T) => boolean` | `undefined` | Custom predicate to determine if the resolved data should be treated as "empty". When not provided, arrays with `length === 0` are automatically considered empty. |
 | `showReloadingState` | `boolean` | `true` | When `true`, a dedicated reloading state (with overlay) is shown during reloads. When `false`, the content template remains visible without an overlay during reloads. |
+| `loader` | `'default' \| 'shimmer'` | `'default'` | Which busy indicator to show. `'default'` = the built-in spinner. `'shimmer'` = a [phantom-ui](https://www.npmjs.com/package/@aejkatappaja/phantom-ui) shimmer that skeletons on first load and glints over the content on refresh. See [Shimmer Loader](#shimmer-loader-phantom-ui). |
 
 ## Outputs
 
@@ -250,6 +251,52 @@ The `#content` template receives a context with a `reload` function, enabling re
 </load-wrapper>
 ```
 
+## Shimmer Loader (phantom-ui)
+
+Set `loader="shimmer"` to replace the spinner with a [phantom-ui](https://www.npmjs.com/package/@aejkatappaja/phantom-ui) shimmer. The component imports the web component and enables `CUSTOM_ELEMENTS_SCHEMA` internally — no extra setup in the consumer.
+
+```html
+<load-wrapper [source]="items" loader="shimmer">
+  <ng-template #content let-data>
+    @for (item of data; track item.id) {
+      <item-card [item]="item" />
+    }
+  </ng-template>
+</load-wrapper>
+```
+
+### Behaviour
+
+The wrapper renders `<phantom-ui animation="shimmer">` and picks its mode by whether data exists yet:
+
+- **First load** (no data) → `mode="skeleton"`: renders a generic placeholder structure (title bar, chip row, lines) so phantom-ui has shapes to measure and shimmer.
+- **Refresh / reload** (data present) → `mode="overlay"`: the real content stays visible and dimmed while a light glint sweeps over it (stale-while-revalidate).
+
+> `animation="shimmer"` is the moving sweep. `"pulse"` only dims the content and is **not** the shimmer.
+
+The idle, error, and empty states are unchanged; only the loading/reloading indicator differs.
+
+### Theme-adaptive colours
+
+phantom-ui is styled through its CSS custom properties, derived from `--color-text` so the shimmer is **darker on light themes and lighter on dark themes** automatically:
+
+```scss
+phantom-ui {
+  --shimmer-bg:              color-mix(in srgb, var(--color-text) 12%, transparent);
+  --shimmer-color:           color-mix(in srgb, var(--color-text) 26%, transparent);
+  --shimmer-duration:        1.4s;
+  --phantom-content-opacity: 0.55; /* dim level of content in overlay mode */
+}
+```
+
+### AG Grid caveat — `data-shimmer-no-children`
+
+phantom-ui shimmers by measuring **leaf** DOM elements. AG Grid's virtualized rows / transformed cells are not measurable leaves, so the grid would show no shimmer. Add phantom-ui's `data-shimmer-no-children` attribute to capture the grid as a **single** shimmer block:
+
+```html
+<ag-grid-angular data-shimmer-no-children … />
+```
+
 ## State Resolution Order
 
 The `@switch(true)` in the template evaluates states in this priority order:
@@ -279,6 +326,9 @@ The component uses BEM-style class names under the `.data-status` block:
 | `.data-status__error-icon` | Error icon (⚠) |
 | `.data-status__retry-btn` | Retry button in error state |
 | `.data-status__empty` | Empty state wrapper |
+| `.data-status__shimmer-placeholder` | First-load skeleton placeholder (shimmer mode) |
+| `.data-status__sk` / `.data-status__sk--*` | Skeleton blocks inside the placeholder (`--title`, `--line`, `--chip`) |
+| `.data-status__sk-row` | Row of skeleton chips |
 
 All colours use CSS custom properties with sensible fallbacks:
 
@@ -291,3 +341,14 @@ All colours use CSS custom properties with sensible fallbacks:
 | `--text-primary` | `#333` | Retry button text |
 | `--hover-background` | `#f5f5f5` | Retry button hover |
 | `--active-background` | `#e8e8e8` | Retry button active |
+
+### Shimmer (phantom-ui) custom properties
+
+Set on the `phantom-ui` element (shimmer mode only), derived from `--color-text` so they adapt to every theme:
+
+| Custom property | Default | Usage |
+|---|---|---|
+| `--shimmer-bg` | `color-mix(… --color-text 12%, transparent)` | Background of each shimmer block |
+| `--shimmer-color` | `color-mix(… --color-text 26%, transparent)` | Colour of the animated sweep |
+| `--shimmer-duration` | `1.4s` | Animation cycle duration |
+| `--phantom-content-opacity` | `0.55` | Dim level of the underlying content in overlay mode |

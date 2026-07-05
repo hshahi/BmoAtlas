@@ -44,8 +44,8 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
         </div>
       </div>
 
-      <load-wrapper-client-data [source]="stockData()">
-       
+      <load-wrapper-client-data [source]="stockData()" loader="shimmer">
+
         <ng-template #content let-data>
           <div class="summary__meta card">
             <div class="summary__meta-item">
@@ -80,6 +80,7 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
 
           <ag-grid-angular
             class="summary__grid card"
+            data-shimmer-no-children
             [rowData]="getTopEntries(data)"
             [columnDefs]="columnDefs"
             [defaultColDef]="defaultColDef"
