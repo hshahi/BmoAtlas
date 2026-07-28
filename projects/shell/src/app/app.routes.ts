@@ -8,6 +8,14 @@ export const routes: Routes = [
     data: { breadcrumb: 'Home' },
   },
 
+  // ── Angular Material component showcase ──────────────────
+  {
+    path: 'material',
+    loadComponent: () =>
+      import('./pages/material-showcase/material-showcase').then(m => m.MaterialShowcase),
+    data: { breadcrumb: 'Material Showcase' },
+  },
+
   // ── Search (page discovery) ─────────────────────────────
   {
     path: 'search',

@@ -1,0 +1,588 @@
+<div class="showcase">
+
+  <!-- ── Page header ─────────────────────────────────────────────── -->
+  <header class="showcase__header">
+    <h1 class="showcase__title">Angular Material Showcase</h1>
+    <p class="showcase__subtitle">
+      Angular 21 · outline controls · rectangular corners · signal-driven bindings.
+      Every component is bridged to the BmoAtlas design tokens, so it adapts to all
+      {{ themes.length }} themes.
+    </p>
+  </header>
+
+  <!-- ── Theme switcher (organised per theme) ────────────────────── -->
+  <section class="theme-bar card">
+    <span class="theme-bar__label">Theme</span>
+    <div class="theme-bar__grid">
+      @for (t of themes; track t) {
+        <button matButton="outlined"
+                class="theme-bar__btn"
+                [class.theme-bar__btn--active]="activeTheme() === t"
+                (click)="selectTheme(t)">
+          {{ themeLabels[t] }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <!-- ═══ BUTTON ═════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Button</h2>
+      <p class="row__notes">Event binding · property binding · interpolation · template ref</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Event binding <code>(click)</code></span>
+        <button matButton="outlined" (click)="clicks.set(clicks() + 1)">Click me</button>
+        <span class="demo__val">{{ buttonLabel() }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Property binding <code>[disabled]</code></span>
+        <mat-checkbox [ngModel]="disableButtons()" (ngModelChange)="disableButtons.set($event)">
+          Disable
+        </mat-checkbox>
+        <button matButton="outlined" [disabled]="disableButtons()">Bound disabled</button>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Interpolation label</span>
+        <button matButton="outlined">{{ buttonLabel() }}</button>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Template reference <code>#ref</code></span>
+        <button matButton="outlined" (click)="recordRef(label.textContent)">
+          <span #label>Read my label</span>
+        </button>
+        <span class="demo__val">Last read: {{ lastRef() || '—' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TEXT BOX ═══════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Text box</h2>
+      <p class="row__notes">Two-way · property + event · reactive form · disabled / readonly</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Two-way <code>[ngModel]</code> + <code>(ngModelChange)</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Name</mat-label>
+          <input matInput [ngModel]="textValue()" (ngModelChange)="textValue.set($event)" />
+        </mat-form-field>
+        <span class="demo__val">value: “{{ textValue() }}”</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Property + event <code>[value]</code> / <code>(input)</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Symbol</mat-label>
+          <input matInput [value]="propValue()" (input)="propValue.set($any($event.target).value)" />
+        </mat-form-field>
+        <span class="demo__val">value: “{{ propValue() }}”</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Reactive <code>[formControl]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Reactive</mat-label>
+          <input matInput [formControl]="nameControl" />
+        </mat-form-field>
+        <span class="demo__val">value: “{{ nameControl.value }}” · dirty: {{ nameControl.dirty }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">States</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Disabled</mat-label>
+          <input matInput value="can't touch this" [disabled]="true" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Readonly</mat-label>
+          <input matInput value="read only" readonly />
+        </mat-form-field>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DROPDOWN ═══════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Dropdown</h2>
+      <p class="row__notes">Two-way · multiple · disabled</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Single <code>[ngModel]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Ticker</mat-label>
+          <mat-select [ngModel]="selectValue()" (ngModelChange)="selectValue.set($event)">
+            @for (o of options; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <span class="demo__val">selected: {{ selectValue() }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Multiple <code>[multiple]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Watchlist</mat-label>
+          <mat-select multiple [ngModel]="multiValue()" (ngModelChange)="multiValue.set($event)">
+            @for (o of options; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <span class="demo__val">selected: {{ multiValue().join(', ') || '—' }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Disabled</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Locked</mat-label>
+          <mat-select [ngModel]="'aapl'" [disabled]="true">
+            @for (o of options; track o.value) {
+              <mat-option [value]="o.value">{{ o.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHECKBOX ═══════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Checkbox</h2>
+      <p class="row__notes">Two-way · event + checked · indeterminate · disabled</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo demo--inline">
+        <span class="demo__cap">Two-way <code>[ngModel]</code></span>
+        <mat-checkbox [ngModel]="checkA()" (ngModelChange)="checkA.set($event)">Enabled</mat-checkbox>
+        <span class="demo__val">{{ checkA() }}</span>
+      </div>
+
+      <div class="demo demo--inline">
+        <span class="demo__cap"><code>[checked]</code> + <code>(change)</code></span>
+        <mat-checkbox [checked]="checkB()" (change)="onCheckboxChange($event)">Subscribe</mat-checkbox>
+        <span class="demo__val">{{ checkB() }}</span>
+      </div>
+
+      <div class="demo demo--inline">
+        <span class="demo__cap"><code>[indeterminate]</code></span>
+        <mat-checkbox [indeterminate]="indeterminate()"
+                      (indeterminateChange)="indeterminate.set($event)">Select all</mat-checkbox>
+        <span class="demo__val">{{ indeterminate() ? 'indeterminate' : 'determinate' }}</span>
+      </div>
+
+      <div class="demo demo--inline">
+        <span class="demo__cap">Disabled</span>
+        <mat-checkbox [checked]="true" [disabled]="true">Locked on</mat-checkbox>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DATEPICKER ═════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Datepicker</h2>
+      <p class="row__notes">Two-way + <code>(dateChange)</code> · reactive + min/max · disabled</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Two-way <code>[ngModel]</code> + <code>(dateChange)</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Trade date</mat-label>
+          <input matInput [matDatepicker]="picker1"
+                 [ngModel]="dateValue()" (ngModelChange)="dateValue.set($event)"
+                 (dateChange)="dateValue.set($event.value)" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker1" />
+          <mat-datepicker #picker1 />
+        </mat-form-field>
+        <span class="demo__val">{{ dateValue()?.toDateString() ?? '—' }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Reactive + <code>[min]</code> / <code>[max]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Settlement</mat-label>
+          <input matInput [matDatepicker]="picker2" [formControl]="dateControl"
+                 [min]="minDate" [max]="maxDate" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker2" />
+          <mat-datepicker #picker2 />
+        </mat-form-field>
+        <span class="demo__val">{{ dateControl.value?.toDateString() ?? '—' }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Disabled</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Locked</mat-label>
+          <input matInput [matDatepicker]="picker3" [disabled]="true" />
+          <mat-datepicker-toggle matIconSuffix [for]="picker3" />
+          <mat-datepicker #picker3 />
+        </mat-form-field>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TIMEPICKER ═════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Timepicker</h2>
+      <p class="row__notes">Two-way <code>[ngModel]</code> · <code>[interval]</code> · disabled</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Two-way <code>[ngModel]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Execution time</mat-label>
+          <input matInput [matTimepicker]="tp1"
+                 [ngModel]="timeValue()" (ngModelChange)="timeValue.set($event)" />
+          <mat-timepicker-toggle matIconSuffix [for]="tp1" />
+          <mat-timepicker #tp1 />
+        </mat-form-field>
+        <span class="demo__val">{{ timeValue()?.toLocaleTimeString() ?? '—' }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap"><code>[interval]</code> — 15 min steps</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Slot</mat-label>
+          <input matInput [matTimepicker]="tp2" interval="15min" />
+          <mat-timepicker-toggle matIconSuffix [for]="tp2" />
+          <mat-timepicker #tp2 />
+        </mat-form-field>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Disabled</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Locked</mat-label>
+          <input matInput [matTimepicker]="tp3" [disabled]="true" />
+          <mat-timepicker-toggle matIconSuffix [for]="tp3" />
+          <mat-timepicker #tp3 />
+        </mat-form-field>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ RADIO BUTTON ═══════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Radio button</h2>
+      <p class="row__notes">Group two-way · disabled option</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Group <code>[ngModel]</code></span>
+        <mat-radio-group class="radio-group"
+                         [ngModel]="radioValue()" (ngModelChange)="radioValue.set($event)">
+          <mat-radio-button value="market">Market</mat-radio-button>
+          <mat-radio-button value="limit">Limit</mat-radio-button>
+          <mat-radio-button value="stop">Stop</mat-radio-button>
+          <mat-radio-button value="oco" [disabled]="true">OCO (disabled)</mat-radio-button>
+        </mat-radio-group>
+        <span class="demo__val">order type: {{ radioValue() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TABS ═══════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Tabs</h2>
+      <p class="row__notes">Property + event index · <code>(selectedTabChange)</code> · dynamic tabs</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">
+          <code>[selectedIndex]</code> / <code>(selectedIndexChange)</code> · dynamic <code>&#64;for</code>
+        </span>
+        <mat-tab-group [selectedIndex]="selectedTab()"
+                       (selectedIndexChange)="selectedTab.set($event)"
+                       (selectedTabChange)="onTabChange($event)">
+          @for (tab of dynamicTabs(); track tab) {
+            <mat-tab [label]="tab">
+              <div class="tab-body">Content for <strong>{{ tab }}</strong>.</div>
+            </mat-tab>
+          }
+        </mat-tab-group>
+        <span class="demo__val">active tab: {{ dynamicTabs()[selectedTab()] }} (index {{ selectedTab() }})</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ DIALOG ═════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Dialog</h2>
+      <p class="row__notes">Open with data · read result via <code>afterClosed()</code></p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Service <code>MatDialog.open()</code></span>
+        <button matButton="outlined" (click)="openDialog()">Open dialog</button>
+        <span class="demo__val">last result: {{ dialogResult() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ EXTENSION (custom control) ═════════════════════════════ -->
+  <section class="row card row--accent">
+    <div class="row__head">
+      <h2 class="row__title">Extending a control</h2>
+      <p class="row__notes">
+        <code>&lt;app-counter-field&gt;</code> implements <code>ControlValueAccessor</code>,
+        so it works with <code>ngModel</code> and reactive forms like any built-in control.
+      </p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Custom control via <code>[ngModel]</code></span>
+        <app-counter-field unit="shares" [stepBy]="5"
+                           [ngModel]="counterValue()" (ngModelChange)="counterValue.set($event)" />
+        <span class="demo__val">value: {{ counterValue() }}</span>
+      </div>
+
+      <div class="demo">
+        <span class="demo__cap">Same control via <code>[formControl]</code></span>
+        <app-counter-field [formControl]="counterControl" />
+        <span class="demo__val">value: {{ counterControl.value }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ACCORDION ══════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Accordion</h2>
+      <p class="row__notes">Multiple panels · <code>[multi]</code> · open tracking</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo demo--inline">
+        <span class="demo__cap"><code>[multi]</code> — allow multiple open</span>
+        <mat-slide-toggle [ngModel]="accordionMulti()" (ngModelChange)="accordionMulti.set($event)">
+          Multi
+        </mat-slide-toggle>
+      </div>
+      <div class="demo">
+        <span class="demo__cap">mat-accordion — last opened: {{ openedPanel() }}</span>
+        <mat-accordion class="block" [multi]="accordionMulti()">
+          <mat-expansion-panel (opened)="openedPanel.set('Overview')">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Overview</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Summary of the position.</p>
+          </mat-expansion-panel>
+          <mat-expansion-panel (opened)="openedPanel.set('Risk')">
+            <mat-expansion-panel-header>
+              <mat-panel-title>Risk</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Exposure and limits.</p>
+          </mat-expansion-panel>
+          <mat-expansion-panel (opened)="openedPanel.set('History')">
+            <mat-expansion-panel-header>
+              <mat-panel-title>History</mat-panel-title>
+            </mat-expansion-panel-header>
+            <p>Recent activity.</p>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ AUTOCOMPLETE ═══════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Autocomplete</h2>
+      <p class="row__notes">Filter as you type · <code>(optionSelected)</code></p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap"><code>[matAutocomplete]</code> + <code>(input)</code> filter</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Search ticker</mat-label>
+          <input matInput [matAutocomplete]="auto"
+                 [value]="autoQuery()"
+                 (input)="autoQuery.set($any($event.target).value)" />
+          <mat-autocomplete #auto="matAutocomplete"
+                            (optionSelected)="autoSelected.set($event.option.value)">
+            @for (o of filteredOptions(); track o.value) {
+              <mat-option [value]="o.label">{{ o.label }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+        <span class="demo__val">selected: {{ autoSelected() }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ BUTTON TOGGLE ══════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Button toggle</h2>
+      <p class="row__notes">Single value · multiple selection</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Single <code>[value]</code> / <code>(change)</code></span>
+        <mat-button-toggle-group [value]="alignValue()" (change)="alignValue.set($event.value)">
+          <mat-button-toggle value="left">Left</mat-button-toggle>
+          <mat-button-toggle value="center">Center</mat-button-toggle>
+          <mat-button-toggle value="right">Right</mat-button-toggle>
+        </mat-button-toggle-group>
+        <span class="demo__val">align: {{ alignValue() }}</span>
+      </div>
+      <div class="demo">
+        <span class="demo__cap">Multiple <code>[multiple]</code> + <code>[ngModel]</code></span>
+        <mat-button-toggle-group multiple
+                                 [ngModel]="formatValues()" (ngModelChange)="formatValues.set($event)">
+          <mat-button-toggle value="bold">Bold</mat-button-toggle>
+          <mat-button-toggle value="italic">Italic</mat-button-toggle>
+          <mat-button-toggle value="underline">Underline</mat-button-toggle>
+        </mat-button-toggle-group>
+        <span class="demo__val">{{ formatValues().join(', ') || '—' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CARD ═══════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Card</h2>
+      <p class="row__notes">Header · content · actions (outlined)</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap"><code>mat-card</code> (outlined) with actions</span>
+        <mat-card appearance="outlined" class="block">
+          <mat-card-header>
+            <mat-card-title>Portfolio</mat-card-title>
+            <mat-card-subtitle>Updated {{ dateValue()?.toDateString() ?? 'today' }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p>A surface for grouping related content. Adapts to every theme via the token bridge.</p>
+          </mat-card-content>
+          <mat-card-actions align="end">
+            <button matButton="outlined" (click)="clicks.set(clicks() + 1)">View ({{ clicks() }})</button>
+          </mat-card-actions>
+        </mat-card>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ CHIPS ══════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Chips</h2>
+      <p class="row__notes">Static set · editable grid (add / remove)</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Static <code>mat-chip-set</code></span>
+        <mat-chip-set>
+          <mat-chip>Equities</mat-chip>
+          <mat-chip>Fixed income</mat-chip>
+          <mat-chip>FX</mat-chip>
+        </mat-chip-set>
+      </div>
+      <div class="demo">
+        <span class="demo__cap">Editable <code>mat-chip-grid</code> — type + Enter to add, ✕ to remove</span>
+        <mat-form-field appearance="outline">
+          <mat-label>Tickers</mat-label>
+          <mat-chip-grid #grid>
+            @for (chip of chips(); track chip) {
+              <mat-chip-row (removed)="removeChip(chip)">
+                {{ chip }}
+                <button matChipRemove aria-label="remove">✕</button>
+              </mat-chip-row>
+            }
+          </mat-chip-grid>
+          <input [matChipInputFor]="grid"
+                 (matChipInputTokenEnd)="addChip($event)"
+                 placeholder="New ticker…" />
+        </mat-form-field>
+        <span class="demo__val">{{ chips().join(', ') || '—' }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ EXPANSION PANEL ════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Expansion panel</h2>
+      <p class="row__notes">Two-way <code>[expanded]</code> / <code>(expandedChange)</code></p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Single panel — expanded: {{ panelExpanded() }}</span>
+        <mat-expansion-panel class="block"
+                             [expanded]="panelExpanded()"
+                             (expandedChange)="panelExpanded.set($event)">
+          <mat-expansion-panel-header>
+            <mat-panel-title>Trade details</mat-panel-title>
+            <mat-panel-description>Click to {{ panelExpanded() ? 'collapse' : 'expand' }}</mat-panel-description>
+          </mat-expansion-panel-header>
+          <p>Body content revealed when the panel is expanded.</p>
+        </mat-expansion-panel>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SLIDE TOGGLE ═══════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Slide toggle</h2>
+      <p class="row__notes">Two-way · event · disabled</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo demo--inline">
+        <span class="demo__cap">Two-way <code>[ngModel]</code></span>
+        <mat-slide-toggle [ngModel]="slideA()" (ngModelChange)="slideA.set($event)">Live updates</mat-slide-toggle>
+        <span class="demo__val">{{ slideA() }}</span>
+      </div>
+      <div class="demo demo--inline">
+        <span class="demo__cap"><code>[checked]</code> + <code>(change)</code></span>
+        <mat-slide-toggle [checked]="slideB()" (change)="slideB.set($event.checked)">Compact mode</mat-slide-toggle>
+        <span class="demo__val">{{ slideB() }}</span>
+      </div>
+      <div class="demo demo--inline">
+        <span class="demo__cap">Disabled</span>
+        <mat-slide-toggle [checked]="true" [disabled]="true">Locked on</mat-slide-toggle>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ TOOLTIP ════════════════════════════════════════════════ -->
+  <section class="row card">
+    <div class="row__head">
+      <h2 class="row__title">Tooltip</h2>
+      <p class="row__notes">Message · position binding</p>
+    </div>
+    <div class="row__demos">
+      <div class="demo">
+        <span class="demo__cap">Position <code>[matTooltipPosition]</code></span>
+        <mat-form-field appearance="outline">
+          <mat-label>Position</mat-label>
+          <mat-select [ngModel]="tooltipPosition()" (ngModelChange)="tooltipPosition.set($event)">
+            @for (p of tooltipPositions; track p) {
+              <mat-option [value]="p">{{ p }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <button matButton="outlined"
+                matTooltip="Hover me — I follow the selected position"
+                [matTooltipPosition]="tooltipPosition()">Hover for tooltip</button>
+      </div>
+    </div>
+  </section>
+
+</div>

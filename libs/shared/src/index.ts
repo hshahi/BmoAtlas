@@ -14,7 +14,7 @@ export { AtlasLoader } from './components/atlas-loader/atlas-loader';
 // Services
 export { ErrorService } from './services/error/error.service';
 export type { AppError } from './services/error/error.service';
-export { ThemeService } from './services/theme/theme.service';
+export { ThemeService, THEMES, THEME_LABELS } from './services/theme/theme.service';
 export type { Theme } from './services/theme/theme.service';
 
 // Interceptors

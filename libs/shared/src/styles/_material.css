@@ -1,0 +1,194 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Angular Material ⇄ BmoAtlas token bridge
+
+   Maps Material's M3 system tokens (--mat-sys-*) onto our design tokens so
+   every Material component adapts to all 14 themes automatically.
+
+   Why a single block (no per-theme duplication):
+   `data-theme` is set on the ROOT element (documentElement), which is the same
+   element `:root` matches. Our --color-* tokens are re-declared per
+   :root[data-theme="…"], so on :root their computed values already reflect the
+   active theme. Because --mat-sys-* here is declared on :root as
+   `var(--color-…)`, its computed value on :root resolves against the active
+   theme's --color-* — no per-theme copy of this file is needed.
+
+   Load order: imported (unlayered) from theme.css AFTER the prebuilt Material
+   theme (added in angular.json). `:root` (0,1,0) out-specifies the prebuilt's
+   `html` (0,0,1), so these overrides win regardless of source order.
+
+   Design directive: all controls are rectangular (no rounded corners).
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Primary ─────────────────────────────────────────────────── */
+  --mat-sys-primary:               var(--color-primary);
+  --mat-sys-on-primary:            var(--color-text-inverse);
+  --mat-sys-primary-container:     var(--color-primary-light);
+  --mat-sys-on-primary-container:  var(--color-text);
+  --mat-sys-inverse-primary:       var(--color-primary-hover);
+  --mat-sys-surface-tint:          var(--color-primary);
+
+  /* ── Secondary / tertiary (kept in the BMO family) ──────────── */
+  --mat-sys-secondary:             var(--color-primary-hover);
+  --mat-sys-on-secondary:          var(--color-text-inverse);
+  --mat-sys-secondary-container:   var(--color-primary-light);
+  --mat-sys-on-secondary-container:var(--color-text);
+  --mat-sys-tertiary:              var(--color-info);
+  --mat-sys-on-tertiary:           var(--color-text-inverse);
+  --mat-sys-tertiary-container:    var(--color-info-light);
+  --mat-sys-on-tertiary-container: var(--color-text);
+
+  /* ── Error ───────────────────────────────────────────────────── */
+  --mat-sys-error:                 var(--color-danger);
+  --mat-sys-on-error:              var(--color-text-inverse);
+  --mat-sys-error-container:       var(--color-danger-light);
+  --mat-sys-on-error-container:    var(--color-text);
+
+  /* ── Surfaces & text ─────────────────────────────────────────── */
+  --mat-sys-background:            var(--color-bg);
+  --mat-sys-on-background:         var(--color-text);
+  --mat-sys-surface:               var(--color-bg-surface);
+  --mat-sys-surface-dim:           var(--color-bg-muted);
+  --mat-sys-surface-bright:        var(--color-bg-elevated);
+  --mat-sys-surface-variant:       var(--color-bg-muted);
+  --mat-sys-on-surface:            var(--color-text);
+  --mat-sys-on-surface-variant:    var(--color-text-secondary);
+
+  --mat-sys-surface-container-lowest:  var(--color-bg);
+  --mat-sys-surface-container-low:     var(--color-bg-muted);
+  --mat-sys-surface-container:         var(--color-bg-surface);
+  --mat-sys-surface-container-high:    var(--color-bg-elevated);
+  --mat-sys-surface-container-highest: var(--color-bg-elevated);
+
+  --mat-sys-inverse-surface:       var(--color-text);
+  --mat-sys-inverse-on-surface:    var(--color-bg-surface);
+
+  /* ── Lines / overlays ────────────────────────────────────────── */
+  --mat-sys-outline:               var(--color-border);
+  --mat-sys-outline-variant:       var(--color-border);
+  --mat-sys-shadow:                #000000;
+  --mat-sys-scrim:                 #000000;
+
+  /* ── Typography family (keep our sans across all typescales) ─── */
+  --mat-sys-body-large-font:   var(--font-sans);
+  --mat-sys-body-medium-font:  var(--font-sans);
+  --mat-sys-body-small-font:   var(--font-sans);
+  --mat-sys-label-large-font:  var(--font-sans);
+  --mat-sys-label-medium-font: var(--font-sans);
+  --mat-sys-label-small-font:  var(--font-sans);
+  --mat-sys-title-large-font:  var(--font-sans);
+  --mat-sys-title-medium-font: var(--font-sans);
+
+  /* ── Rectangular corners — system shape scale ──────────────────
+     NOTE: values MUST carry a unit (0px, not 0). Material composes these
+     tokens inside calc()/max() expressions (e.g. the outlined field's
+     `max(16px, var(--mat-sys-corner-extra-small) + 4px)` padding and the
+     `max(12px, …)` outline-segment width). A unitless `0` makes `0 + 4px`
+     invalid, so the whole declaration is dropped and the control's padding
+     collapses to 0 — pushing text and carets against the border. */
+  --mat-sys-corner-extra-small:     0px;
+  --mat-sys-corner-small:           0px;
+  --mat-sys-corner-medium:          0px;
+  --mat-sys-corner-large:           0px;
+  --mat-sys-corner-extra-large:     0px;
+  --mat-sys-corner-extra-small-top: 0px;
+  --mat-sys-corner-large-top:       0px;
+  --mat-sys-corner-large-start:     0px;
+  --mat-sys-corner-large-end:       0px;
+
+  /* ── Rectangular corners — component (MDC) shape tokens ──────── */
+  --mdc-outlined-button-container-shape:     0px;
+  --mdc-filled-button-container-shape:       0px;
+  --mdc-text-button-container-shape:         0px;
+  --mdc-protected-button-container-shape:    0px;
+  --mdc-outlined-text-field-container-shape: 0px;
+  --mdc-filled-text-field-container-shape:   0px;
+  --mdc-dialog-container-shape:              0px;
+  --mat-select-container-shape:              0px;
+  --mat-datepicker-calendar-container-shape: 0px;
+}
+
+/* ── Compact density — control heights smaller than Material defaults ──
+   Tune everything from the ADJUSTABLE KNOBS below; the rest just wires those
+   knobs into the underlying Material tokens. Every form control (text box,
+   dropdown, date box, autocomplete — they all reuse the form-field height)
+   follows --atlas-field-height. */
+:root {
+  /* ═══ ADJUSTABLE KNOBS — change these to taste ═══════════════════ */
+
+  /* Form fields: text box, dropdown, date box, autocomplete (Material default 56px) */
+  --atlas-field-height:           30px;
+  --atlas-field-vertical-padding: 4px;
+
+  /* Buttons — all variants (Material default 40px) */
+  --atlas-button-height: 32px;
+
+  /* Slide toggle (Material defaults: track 32px, handle 16→24px) */
+  --atlas-slide-toggle-track-height: 20px;
+  --atlas-slide-toggle-handle-size:  14px;
+  --atlas-slide-toggle-tap-size:     26px;
+
+  /* ═══ Wiring (usually no need to touch below) ════════════════════ */
+
+  /* Form fields. The container height only wins if it exceeds the text's own
+     footprint (line-height + padding), so compress the text line-height too —
+     that makes --atlas-field-height the authoritative knob. */
+  --mat-form-field-container-height:           var(--atlas-field-height);
+  --mat-form-field-container-vertical-padding: var(--atlas-field-vertical-padding);
+  --mat-form-field-container-text-line-height: 1.25rem;
+
+  /* Buttons — all variants */
+  --mat-button-outlined-container-height:  var(--atlas-button-height);
+  --mat-button-filled-container-height:    var(--atlas-button-height);
+  --mat-button-protected-container-height: var(--atlas-button-height);
+  --mat-button-tonal-container-height:     var(--atlas-button-height);
+  --mat-button-text-container-height:      var(--atlas-button-height);
+
+  /* Icon button — e.g. datepicker toggle (default 40px) */
+  --mat-icon-button-state-layer-size: 32px;
+
+  /* Checkbox / radio (default 40px state layer) */
+  --mat-checkbox-state-layer-size: 24px;
+  --mat-radio-state-layer-size:    24px;
+
+  /* Slide toggle — track height drives the control's layout height; all four
+     handle sizes are pinned to one value so the selected handle (default 24px)
+     can't overflow a shorter track. */
+  --mat-slide-toggle-track-height:           var(--atlas-slide-toggle-track-height);
+  --mat-slide-toggle-unselected-handle-size: var(--atlas-slide-toggle-handle-size);
+  --mat-slide-toggle-selected-handle-size:   var(--atlas-slide-toggle-handle-size);
+  --mat-slide-toggle-pressed-handle-size:    var(--atlas-slide-toggle-handle-size);
+  --mat-slide-toggle-with-icon-handle-size:  var(--atlas-slide-toggle-handle-size);
+  --mat-slide-toggle-selected-icon-size:     10px;
+  --mat-slide-toggle-state-layer-size:       var(--atlas-slide-toggle-tap-size);
+
+  /* Tabs (default 48px) */
+  --mat-tab-container-height: 29px;
+}
+
+/* Safety net: square off hosts and CDK-overlay surfaces (dialog, select,
+   datepicker, menu) that don't fully derive their radius from the tokens
+   above. Overlay panels render at <body> level, so this must stay global
+   (not component-scoped). */
+.mat-mdc-button-base,
+.mat-mdc-text-field-wrapper,
+.mat-mdc-select-panel,
+.mat-mdc-menu-panel,
+.mat-datepicker-content,
+.mat-mdc-dialog-surface,
+.mat-mdc-card,
+.mat-mdc-tab-header,
+.mat-expansion-panel,
+.mat-mdc-autocomplete-panel,
+.mat-mdc-tooltip .mdc-tooltip__surface,
+.mat-button-toggle-group,
+.mat-mdc-chip {
+  border-radius: 0 !important;
+}
+
+/* The default dropdown caret is a tiny 10×5px chevron — scale it up so it reads
+   clearly next to the text. The SVG is centred via translate(-50%,-50%); keep
+   that and add scale(). */
+.mat-mdc-select-arrow svg {
+  transform: translate(-50%, -50%) scale(1.7) !important;
+}

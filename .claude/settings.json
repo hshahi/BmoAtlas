@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node tmp-cdp.mjs)",
+      "Bash(rm -f tmp-shot.mjs tmp-diag.mjs tmp-cdp.mjs tmp-full.png tmp-row-*.png)",
+      "Bash(command -v powershell.exe)",
+      "Bash(powershell.exe -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '\\\\''*ng*serve*4321*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }')"
+    ]
+  }
+}

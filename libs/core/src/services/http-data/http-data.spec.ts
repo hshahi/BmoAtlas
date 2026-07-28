@@ -1,5 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { Injector, signal } from '@angular/core';
+import {
+    Injector, signal, inject, computed, effect,
+    Component, ChangeDetectionStrategy, OnInit, Injectable,
+} from '@angular/core';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 
@@ -1190,6 +1193,249 @@ describe('HttpData', () => {
 
             expect(data.isError()).toBe(true);
             expect(data.error()).toBeDefined();
+        });
+    });
+});
+
+// =============================================================================
+// Scenario: HttpData used inside a service (GET + POST) and consumed by a
+// component via signals. Mirrors the "Using HttpData in a service" and
+// "Consuming the service in a component" sections of http-data.md, and acts as
+// executable documentation for that pattern.
+// =============================================================================
+
+interface ScenarioItem {
+    id: number;
+    name: string;
+}
+
+interface CreateItemDto {
+    name: string;
+}
+
+@Injectable()
+class ItemsService {
+    private readonly injector = inject(Injector);
+
+    /** Reactive body source for the POST request. */
+    private readonly draft = signal<CreateItemDto>({ name: '' });
+
+    /** GET /api/items — the list of items. */
+    readonly items = HttpData.get<ScenarioItem[]>(this.injector, {
+        url: '/api/items',
+        defaultValue: [],
+    });
+
+    /** POST /api/items — creates an item; body tracks the current draft. */
+    readonly created = HttpData.post<ScenarioItem, CreateItemDto>(this.injector, {
+        url: '/api/items',
+        body: () => this.draft(),
+    });
+
+    constructor() {
+        // Re-fetch the list whenever a create succeeds.
+        effect(() => {
+            if (this.created.isSuccess()) {
+                this.items.reload();
+            }
+        });
+    }
+
+    loadItems(): void {
+        this.items.load();
+    }
+
+    createItem(dto: CreateItemDto): void {
+        this.draft.set(dto);
+        this.created.load();
+    }
+}
+
+@Component({
+    selector: 'test-items-host',
+    template: `
+        <span class="count">{{ count() }}</span>
+        @for (item of items.value(); track item.id) {
+            <span class="item">{{ item.name }}</span>
+        }
+        @if (created.isSuccess()) {
+            <span class="created">{{ created.value()?.name }}</span>
+        }
+    `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+})
+class ItemsHostComponent implements OnInit {
+    private readonly service = inject(ItemsService);
+
+    protected readonly items = this.service.items;
+    protected readonly created = this.service.created;
+    protected readonly count = computed(() => this.items.value()?.length ?? 0);
+
+    ngOnInit(): void {
+        this.service.loadItems();
+    }
+
+    add(name: string): void {
+        this.service.createItem({ name });
+    }
+}
+
+describe('HttpData scenario: service (GET + POST) consumed by a component', () => {
+    let httpTesting: HttpTestingController;
+
+    beforeEach(() => {
+        TestBed.configureTestingModule({
+            imports: [ItemsHostComponent],
+            providers: [
+                provideHttpClient(),
+                provideHttpClientTesting(),
+                ItemsService,
+            ],
+        });
+        httpTesting = TestBed.inject(HttpTestingController);
+    });
+
+    afterEach(() => {
+        httpTesting.verify();
+    });
+
+    /** Stabilize: flush all pending effects and microtasks. */
+    async function stabilize(): Promise<void> {
+        TestBed.tick();
+        await Promise.resolve();
+        TestBed.tick();
+        await Promise.resolve();
+        TestBed.tick();
+    }
+
+    const isGet = (r: { url: string; method: string }) =>
+        r.url === '/api/items' && r.method === 'GET';
+    const isPost = (r: { url: string; method: string }) =>
+        r.url === '/api/items' && r.method === 'POST';
+
+    // -------------------------------------------------------------------------
+    // Service level
+    // -------------------------------------------------------------------------
+    describe('service', () => {
+        it('loads items via GET and exposes them through signals', async () => {
+            const service = TestBed.inject(ItemsService);
+
+            service.loadItems();
+            await stabilize();
+
+            const reqs = httpTesting.match(isGet);
+            expect(reqs.length).toBeGreaterThan(0);
+            expect(reqs[0].request.method).toBe('GET');
+            reqs.forEach(req => req.flush([
+                { id: 1, name: 'Alpha' },
+                { id: 2, name: 'Beta' },
+            ]));
+            await stabilize();
+
+            expect(service.items.isSuccess()).toBe(true);
+            expect(service.items.value()).toEqual([
+                { id: 1, name: 'Alpha' },
+                { id: 2, name: 'Beta' },
+            ]);
+        });
+
+        it('creates an item via POST with the draft body and exposes the result', async () => {
+            const service = TestBed.inject(ItemsService);
+
+            // Load the list first so the auto-reload effect has a resource to reload.
+            service.loadItems();
+            await stabilize();
+            httpTesting.match(isGet).forEach(req => req.flush([{ id: 1, name: 'Alpha' }]));
+            await stabilize();
+
+            service.createItem({ name: 'Beta' });
+            await stabilize();
+
+            const postReqs = httpTesting.match(isPost);
+            expect(postReqs.length).toBeGreaterThan(0);
+            expect(postReqs[0].request.method).toBe('POST');
+            expect(postReqs[0].request.body).toEqual({ name: 'Beta' });
+            postReqs.forEach(req => req.flush({ id: 2, name: 'Beta' }));
+            await stabilize();
+
+            expect(service.created.isSuccess()).toBe(true);
+            expect(service.created.value()).toEqual({ id: 2, name: 'Beta' });
+
+            // The effect triggered items.reload() → a second GET is now pending.
+            httpTesting.match(isGet).forEach(req => req.flush([
+                { id: 1, name: 'Alpha' },
+                { id: 2, name: 'Beta' },
+            ]));
+            await stabilize();
+        });
+
+        it('re-fetches the list after a successful create (effect)', async () => {
+            const service = TestBed.inject(ItemsService);
+
+            service.loadItems();
+            await stabilize();
+            httpTesting.match(isGet).forEach(req => req.flush([{ id: 1, name: 'Alpha' }]));
+            await stabilize();
+
+            service.createItem({ name: 'Beta' });
+            await stabilize();
+            httpTesting.match(isPost).forEach(req => req.flush({ id: 2, name: 'Beta' }));
+            await stabilize();
+
+            // The effect triggered items.reload() → a second GET is now pending.
+            const reloadReqs = httpTesting.match(isGet);
+            expect(reloadReqs.length).toBeGreaterThan(0);
+            reloadReqs.forEach(req => req.flush([
+                { id: 1, name: 'Alpha' },
+                { id: 2, name: 'Beta' },
+            ]));
+            await stabilize();
+
+            expect(service.items.value()?.length).toBe(2);
+        });
+    });
+
+    // -------------------------------------------------------------------------
+    // Component level
+    // -------------------------------------------------------------------------
+    describe('component', () => {
+        it('renders items fetched through the service on init', async () => {
+            const fixture = TestBed.createComponent(ItemsHostComponent);
+            fixture.detectChanges(); // ngOnInit → service.loadItems() → GET
+            await stabilize();
+
+            httpTesting.match(isGet).forEach(req => req.flush([
+                { id: 1, name: 'Alpha' },
+                { id: 2, name: 'Beta' },
+            ]));
+            await stabilize();
+            fixture.detectChanges();
+
+            const host = fixture.nativeElement as HTMLElement;
+            expect(host.querySelectorAll('.item').length).toBe(2);
+            expect(host.querySelector('.count')?.textContent?.trim()).toBe('2');
+        });
+
+        it('renders the created item after a POST completes', async () => {
+            const fixture = TestBed.createComponent(ItemsHostComponent);
+            fixture.detectChanges();
+            await stabilize();
+            httpTesting.match(isGet).forEach(req => req.flush([]));
+            await stabilize();
+            fixture.detectChanges();
+
+            fixture.componentInstance.add('Gamma');
+            await stabilize();
+            httpTesting.match(isPost).forEach(req => req.flush({ id: 3, name: 'Gamma' }));
+            await stabilize();
+            fixture.detectChanges();
+
+            const host = fixture.nativeElement as HTMLElement;
+            expect(host.querySelector('.created')?.textContent?.trim()).toContain('Gamma');
+
+            // Flush the effect-triggered reload GET so httpTesting.verify() passes.
+            httpTesting.match(isGet).forEach(req => req.flush([{ id: 3, name: 'Gamma' }]));
+            await stabilize();
         });
     });
 });

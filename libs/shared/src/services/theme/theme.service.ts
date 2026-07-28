@@ -8,10 +8,28 @@ export type Theme =
 const STORAGE_KEY = 'bmo-atlas-theme';
 
 /** All selectable themes, in toggle-cycle order. */
-const THEMES: readonly Theme[] = [
+export const THEMES: readonly Theme[] = [
   'light', 'dark', 'silver', 'silver-shine', 'midnight', 'platinum', 'chrome', 'titanium',
   'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin', 'merged-blue',
 ];
+
+/** Human-readable labels for each theme (for pickers / switchers). */
+export const THEME_LABELS: Readonly<Record<Theme, string>> = {
+  'light': 'Light',
+  'dark': 'Dark',
+  'silver': 'Silver',
+  'silver-shine': 'Silver Shine',
+  'midnight': 'Midnight',
+  'platinum': 'Platinum',
+  'chrome': 'Chrome',
+  'titanium': 'Titanium',
+  'nord': 'Nord',
+  'dracula': 'Dracula',
+  'tokyo-night': 'Tokyo Night',
+  'high-contrast': 'High Contrast',
+  'catppuccin': 'Catppuccin',
+  'merged-blue': 'Merged Blue',
+};
 
 @Injectable({ providedIn: 'root' })
 export class ThemeService {

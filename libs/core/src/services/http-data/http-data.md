@@ -341,6 +341,138 @@ data.load();          // Start fresh → fires GET again
 data.destroy();       // Tear down → isLoaded() === false, isIdle() === true
 ```
 
+## Using HttpData in a service (GET + POST)
+
+A common pattern is to keep the `HttpData` instances in an injectable service and expose them (and their signals) to components. The service owns the requests; components just read the reactive state and call intent methods.
+
+```ts
+// items.service.ts
+import { Injectable, Injector, inject, signal, effect } from '@angular/core';
+import { HttpData } from '@core';
+
+export interface Item { id: number; name: string; }
+export interface CreateItemDto { name: string; }
+
+@Injectable({ providedIn: 'root' })
+export class ItemsService {
+  private readonly injector = inject(Injector);
+
+  // ── GET: the list of items ─────────────────────────────────────────
+  // Lazy — created here, fired later via loadItems().
+  readonly items = HttpData.get<Item[]>(this.injector, {
+    url: '/api/items',
+    defaultValue: [],
+  });
+
+  // ── POST: create an item ───────────────────────────────────────────
+  // The body is a function that reads a signal, so the request always
+  // sends the current draft when load() is called.
+  private readonly draft = signal<CreateItemDto>({ name: '' });
+
+  readonly created = HttpData.post<Item, CreateItemDto>(this.injector, {
+    url: '/api/items',
+    body: () => this.draft(),
+  });
+
+  constructor() {
+    // Optional: when a create succeeds, refresh the GET list.
+    effect(() => {
+      if (this.created.isSuccess()) {
+        this.items.reload();
+      }
+    });
+  }
+
+  /** Fire the GET (e.g. on route activation or component init). */
+  loadItems(): void {
+    this.items.load();
+  }
+
+  /** Set the draft body, then fire the POST. */
+  createItem(dto: CreateItemDto): void {
+    this.draft.set(dto);
+    this.created.load();
+  }
+}
+```
+
+Notes:
+
+- Both requests are **lazy** — `HttpData.get`/`HttpData.post` create the instances but nothing fires until `load()`.
+- The POST `body` is a **reactive function** (`() => this.draft()`), so `createItem()` just updates the `draft` signal and calls `load()`.
+- The `effect()` in the constructor runs in the service's injection context (safe for a `providedIn: 'root'` singleton) and re-fetches the list after each successful create. Remove it if you don't want auto-refresh.
+
+## Consuming the service in a component (signals)
+
+The component injects the service, exposes the resources to the template, and reads everything as signals — including `computed()` values derived from the GET result. No subscriptions, no manual change detection.
+
+```ts
+// items.component.ts
+import { Component, ChangeDetectionStrategy, inject, computed, OnInit } from '@angular/core';
+import { ItemsService } from './items.service';
+
+@Component({
+  selector: 'app-items',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <!-- ── GET state ─────────────────────────────── -->
+    @if (items.isLoading()) {
+      <p>Loading…</p>
+    } @else if (items.isError()) {
+      <p class="error">Failed to load: {{ items.error() }}</p>
+    } @else {
+      <p>{{ count() }} item(s)</p>
+      <ul>
+        @for (item of items.value(); track item.id) {
+          <li>{{ item.name }}</li>
+        }
+      </ul>
+    }
+
+    <!-- ── POST form ─────────────────────────────── -->
+    <input #name placeholder="New item name" />
+    <button (click)="add(name.value)" [disabled]="created.isPending()">
+      {{ created.isPending() ? 'Saving…' : 'Add' }}
+    </button>
+
+    @if (created.isSuccess()) {
+      <p class="ok">Created “{{ created.value()?.name }}”.</p>
+    } @else if (created.isError()) {
+      <p class="error">Create failed: {{ created.error() }}</p>
+    }
+  `,
+})
+export class ItemsComponent implements OnInit {
+  private readonly service = inject(ItemsService);
+
+  // Expose the service's resources straight to the template.
+  protected readonly items = this.service.items;
+  protected readonly created = this.service.created;
+
+  // A derived signal that reads the GET value reactively.
+  protected readonly count = computed(() => this.items.value()?.length ?? 0);
+
+  ngOnInit(): void {
+    this.service.loadItems();
+  }
+
+  add(name: string): void {
+    if (!name.trim()) return;
+    this.service.createItem({ name: name.trim() });
+  }
+}
+```
+
+What the component reads from each request, all as signals:
+
+| From | Signals used | Purpose |
+|---|---|---|
+| `items` (GET) | `value()`, `isLoading()`, `isError()`, `error()` | Render the list, loading, and error states |
+| `items` (GET) | `computed(() => items.value()?.length ?? 0)` | A derived value (`count`) |
+| `created` (POST) | `isPending()`, `isSuccess()`, `isError()`, `value()`, `error()` | Disable the button while saving, show the created item or the error |
+
+Because everything is a signal, the template updates automatically when the service's requests resolve — and with the service's `effect()`, the list re-fetches itself after a successful create.
+
 ## Key behaviours
 
 | Behaviour | Detail |

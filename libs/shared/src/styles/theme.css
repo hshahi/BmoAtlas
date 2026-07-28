@@ -26,6 +26,10 @@
 @import './themes/_titanium.css';
 @import './themes/_tokyo-night.css';
 
+/* Angular Material system-token bridge (unlayered — must override the prebuilt
+   Material theme added in angular.json). Adapts Material to all themes above. */
+@import './_material.css';
+
 /* Layered styles */
 @import './_reset.css';
 @import './_base.css';
