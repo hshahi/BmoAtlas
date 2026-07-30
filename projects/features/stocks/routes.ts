@@ -12,4 +12,9 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/breakdown/breakdown-container').then(m => m.BreakdownContainer),
     data: { breadcrumb: 'Breakdown' },
   },
+  {
+    path: 'grid',
+    loadComponent: () => import('./pages/grid-demo/grid-demo-container').then(m => m.GridDemoContainer),
+    data: { breadcrumb: 'Data Grid' },
+  },
 ];

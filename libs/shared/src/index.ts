@@ -11,6 +11,20 @@ export type {
 } from './components/load-wrapper-client-data/load-wrapper-client-data';
 export { AtlasLoader } from './components/atlas-loader/atlas-loader';
 
+// Generic data grid (container/presenter)
+export { DataGridPresenter } from './components/data-grid/data-grid-presenter';
+export { HistoryDialog } from './components/data-grid/history-dialog/history-dialog';
+export { ActionCell } from './components/data-grid/renderers/action-cell';
+export { ActionHeader } from './components/data-grid/renderers/action-header';
+export { NEW_ROW } from './components/data-grid/data-grid.types';
+export type {
+  DataGridConfig,
+  DataGridFeatures,
+  DataGridHistoryConfig,
+  MaybeNewRow,
+} from './components/data-grid/data-grid.types';
+export type { HistoryDialogData } from './components/data-grid/history-dialog/history-dialog';
+
 // Services
 export { ErrorService } from './services/error/error.service';
 export type { AppError } from './services/error/error.service';

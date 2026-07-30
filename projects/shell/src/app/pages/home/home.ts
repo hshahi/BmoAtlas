@@ -8,6 +8,7 @@ import { RouterLink } from '@angular/router';
     <div class="home">
       <p class="home__welcome">🌐 Welcome to Atlas</p>
       <a class="home__link" routerLink="/material">Angular Material showcase →</a>
+      <a class="home__link" routerLink="/front-office/stocks/grid">Generic data grid demo →</a>
     </div>
   `,
   styles: [`
@@ -19,7 +20,8 @@ import { RouterLink } from '@angular/router';
       color: var(--color-text);
     }
     .home__link {
-      display: inline-block;
+      display: block;
+      width: fit-content;
       margin-top: var(--space-md);
       color: var(--color-primary);
       font-weight: var(--weight-medium);

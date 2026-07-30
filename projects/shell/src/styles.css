@@ -1,3 +1,7 @@
 @import '@shared/styles/theme.css';
 
+/* Font Awesome (icons used in the generic data-grid action column/header,
+   rendered inside AG Grid's DOM — needs to be global). */
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
 /* Shell-specific global styles */

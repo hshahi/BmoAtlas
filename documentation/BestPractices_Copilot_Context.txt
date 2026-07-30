@@ -1,0 +1,91 @@
+
+The following practices must be applied for Angular version 21.
+The question will follow in (Question:) section.
+
+Use Angular features:
+
+@if, @for, @let @switch
+@defer
+Signal Forms
+linkedSignal 
+effect
+compute
+pipe (for reusability)
+directives (for reusability)
+in Operator
+Void Operator and Return Types
+
+Pages and components should follow:
+
+- container/presenter architecture like we currently have
+- reusable base classes like we already have
+- clean separation of concerns
+- scalable enterprise structure
+- standalone components
+- always use signals and no rxjs 
+- for data access to end point use http-data
+- stay zoneless
+- follow the current themeing
+- preserve current routing
+
+Use modern CSS architecture if supported in current 
+browser  (edge and chrome). if not listed here:
+
+- use current naming for css
+- CSS variables
+- design tokens
+- cascade layers
+- logical properties
+- fluid typography
+- Advanced CSS Nesting
+- recommended angular animation
+- Conditional Styling
+- Smooth Scrolling Without JavaScript
+- Custom Functions
+- Animate to auto (height: auto)
+- Conditional if()
+
+Use the following css where needed and if it fits the purpose
+and considered best practice for our browser supports (edge and chrome)
+if not listed here.
+- :where()
+- :has() Selector
+- clamp()
+- text-wrap: balance
+- @scope
+- @property
+- aspect-ratio
+- CSS Subgrid - Nested Grids
+- place-content
+- Responsive Subgrid
+- perfect-center
+- contain for performance
+
+Support Responsiveness:
+- container queries for responsiveness or Media Queries 
+  if not possible with container queries
+- desktop
+- laptop
+- tablet
+- smaller screens
+
+Preserve and extend without breaking:
+- Vitest setup
+- testing architecture
+- test patterns
+- mocks
+- utilities
+- testing must support All libraries and  all codebase
+
+Configuration:
+- should stay as it is or if needs changing must follow angular best practice
+
+After you answer my question, suggest or advise me ideas and tell my why, if you have any. 
+but dont implement it. ask me first. do not create or change any document unless i mention.
+
+Question:
+
+
+
+
+
