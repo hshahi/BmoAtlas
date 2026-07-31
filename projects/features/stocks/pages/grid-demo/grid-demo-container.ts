@@ -6,9 +6,10 @@ import {
   effect,
   runInInjectionContext,
 } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
 import type { ValueFormatterParams, ValueParserParams } from 'ag-grid-community';
 import { ComponentBase, HttpClientData } from '@core';
-import { DataGridPresenter, DataGridConfig } from '@shared';
+import { DataGridPresenter, DataGridConfig, DataGridEditMode } from '@shared';
 
 interface Position {
   id: string;
@@ -39,11 +40,18 @@ const toNumber = (p: ValueParserParams<Position, number>): number => Number(p.ne
  */
 @Component({
   selector: 'app-grid-demo-container',
-  imports: [DataGridPresenter],
+  imports: [DataGridPresenter, MatButtonModule],
   template: `
     <div class="grid-demo">
+      <div class="grid-demo__bar">
+        <button matButton="outlined" (click)="toggleMode()">
+          Editing: {{ editMode() === 'inline' ? 'Inline' : 'Popup' }} — switch to
+          {{ editMode() === 'inline' ? 'Popup' : 'Inline' }}
+        </button>
+      </div>
       <app-data-grid-presenter
         [config]="config"
+        [editMode]="editMode()"
         [rows]="rows()"
         [loading]="listLoading()"
         [onEdit]="onEdit"
@@ -56,12 +64,18 @@ const toNumber = (p: ValueParserParams<Position, number>): number => Number(p.ne
   `,
   styles: [`
     .grid-demo { padding: var(--space-lg); }
+    .grid-demo__bar { margin-bottom: var(--space-md); }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GridDemoContainer extends ComponentBase implements OnInit {
   protected readonly rows = signal<Position[]>([]);
   protected readonly listLoading = signal(false);
+  protected readonly editMode = signal<DataGridEditMode>('inline');
+
+  protected toggleMode(): void {
+    this.editMode.update(m => (m === 'inline' ? 'popup' : 'inline'));
+  }
 
   private page = 0;
   private readonly pageSize = 20;
@@ -109,6 +123,16 @@ export class GridDemoContainer extends ComponentBase implements OnInit {
         { field: 'user', headerName: 'By', minWidth: 90 },
       ],
     },
+    // Field descriptors for the popup edit form (Material controls + validation).
+    editFields: [
+      { key: 'symbol', label: 'Symbol', type: 'text', required: true },
+      { key: 'side', label: 'Side', type: 'select', required: true,
+        options: [{ value: 'BUY', label: 'Buy' }, { value: 'SELL', label: 'Sell' }] },
+      { key: 'quantity', label: 'Quantity', type: 'number', required: true, min: 0 },
+      { key: 'price', label: 'Price', type: 'number', required: true, min: 0, step: 0.01 },
+      { key: 'trader', label: 'Trader', type: 'text' },
+    ],
+    confirmDelete: true,
   };
 
   // ── Action handlers (wired to HttpClientData) ───────────────────

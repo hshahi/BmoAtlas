@@ -20,10 +20,19 @@ import type {
 import { HttpClientData } from '@core';
 
 import { AtlasLoader } from '../atlas-loader/atlas-loader';
-import { DataGridConfig, DataGridFeatures, MaybeNewRow, NEW_ROW } from './data-grid.types';
+import {
+  DataGridConfig,
+  DataGridFeatures,
+  DataGridEditMode,
+  DataGridFieldConfig,
+  MaybeNewRow,
+  NEW_ROW,
+} from './data-grid.types';
 import { ActionCell, ActionCellParams } from './renderers/action-cell';
 import { ActionHeader, ActionHeaderParams } from './renderers/action-header';
 import { HistoryDialog, HistoryDialogData } from './history-dialog/history-dialog';
+import { EditFormDialog, EditFormDialogData } from './edit-form-dialog/edit-form-dialog';
+import { ConfirmDialog, ConfirmDialogData } from './confirm-dialog/confirm-dialog';
 
 /**
  * Generic, reusable AG Grid presenter (container/presenter). Renders any row type
@@ -81,6 +90,8 @@ export class DataGridPresenter<T = any, H = any> {
   readonly config = input.required<DataGridConfig<T, H>>();
   readonly rows = input.required<T[]>();
   readonly loading = input<boolean>(false);
+  /** 'inline' edits in the grid; 'popup' opens the generic Material form dialog. */
+  readonly editMode = input<DataGridEditMode>('inline');
 
   // Action handlers — the container wires these to HttpData calls.
   readonly onEdit = input<(row: T) => void>();
@@ -99,6 +110,19 @@ export class DataGridPresenter<T = any, H = any> {
 
   protected readonly features = computed<DataGridFeatures>(() => this.config().features ?? {});
   protected readonly gridHeight = computed(() => this.config().gridHeight ?? '480px');
+
+  /** Fields for the popup form — explicit config, or derived from editable columns. */
+  private readonly editFieldList = computed<DataGridFieldConfig[]>(() => {
+    const cfg = this.config();
+    if (cfg.editFields?.length) return cfg.editFields;
+    return cfg.columns
+      .filter(c => c.editable !== false && (c.colId ?? c.field))
+      .map(c => ({
+        key: (c.colId ?? c.field) as string,
+        label: c.headerName ?? ((c.field as string | undefined) ?? ''),
+        type: 'text' as const,
+      }));
+  });
 
   protected readonly defaultColDef = computed<ColDef<T>>(() => {
     const f = this.features();
@@ -143,7 +167,7 @@ export class DataGridPresenter<T = any, H = any> {
         isEditing: (row: T) => this.editingKey() === cfg.getRowKey(row),
         onHistory: (row: T) => this.openHistory(row),
         onEdit: (row: T) => this.startEdit(row),
-        onDelete: (row: T) => this.onDelete()?.(row),
+        onDelete: (row: T) => this.requestDelete(row),
         onSave: (row: T) => this.saveRow(row),
         onCancel: (row: T) => this.cancelRow(row),
       } as Partial<ActionCellParams<T>>,
@@ -187,6 +211,10 @@ export class DataGridPresenter<T = any, H = any> {
   }
 
   private startEdit(row: T): void {
+    if (this.editMode() === 'popup') {
+      this.openEditForm(row, false);
+      return;
+    }
     const api = this.gridApi;
     const col = this.firstEditableColId();
     if (!api || !col) return;
@@ -213,11 +241,18 @@ export class DataGridPresenter<T = any, H = any> {
     });
   }
 
-  // ── New row (insert blank → save/cancel) ────────────────────────
+  // ── New row (inline: insert blank → save/cancel; popup: open form) ──
   private insertNewRow(): void {
     const factory = this.config().newRowFactory;
+    if (!factory) return;
+
+    if (this.editMode() === 'popup') {
+      this.openEditForm(factory(), true);
+      return;
+    }
+
     const api = this.gridApi;
-    if (!factory || !api) return;
+    if (!api) return;
 
     const row = { ...factory(), [NEW_ROW]: true } as MaybeNewRow<T>;
     api.applyTransaction({ add: [row as T], addIndex: 0 });
@@ -227,6 +262,56 @@ export class DataGridPresenter<T = any, H = any> {
     if (col) {
       this.beginEdit(0, col);
     }
+  }
+
+  // ── Popup edit / new (generic signal-forms Material dialog) ─────
+  private openEditForm(value: T, isNew: boolean): void {
+    const ref = this.dialog.open<
+      EditFormDialog<Record<string, unknown>>,
+      EditFormDialogData<Record<string, unknown>>,
+      Record<string, unknown>
+    >(EditFormDialog, {
+      width: '420px',
+      maxWidth: '92vw',
+      data: {
+        title: isNew ? 'New record' : 'Edit record',
+        fields: this.editFieldList(),
+        value: { ...(value as Record<string, unknown>) },
+      },
+    });
+
+    ref.afterClosed().subscribe(result => {
+      if (!result) return;
+      const clean = { ...result } as MaybeNewRow<T>;
+      delete clean[NEW_ROW];
+      if (isNew) {
+        this.onAdd()?.(clean as T);
+      } else {
+        this.onEdit()?.(clean as T);
+      }
+    });
+  }
+
+  // ── Delete (with optional confirmation popup) ───────────────────
+  private requestDelete(row: T): void {
+    const confirm = this.config().confirmDelete ?? true;
+    if (!confirm) {
+      this.onDelete()?.(row);
+      return;
+    }
+
+    const ref = this.dialog.open<ConfirmDialog, ConfirmDialogData, boolean>(ConfirmDialog, {
+      data: {
+        title: 'Delete row',
+        message: 'Are you sure you want to delete this row? This action cannot be undone.',
+        confirmText: 'Delete',
+        danger: true,
+      },
+    });
+
+    ref.afterClosed().subscribe(ok => {
+      if (ok) this.onDelete()?.(row);
+    });
   }
 
   /** Commit — save a new row (POST) or the current edit (PUT). */

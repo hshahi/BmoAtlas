@@ -14,6 +14,8 @@ export { AtlasLoader } from './components/atlas-loader/atlas-loader';
 // Generic data grid (container/presenter)
 export { DataGridPresenter } from './components/data-grid/data-grid-presenter';
 export { HistoryDialog } from './components/data-grid/history-dialog/history-dialog';
+export { EditFormDialog } from './components/data-grid/edit-form-dialog/edit-form-dialog';
+export { ConfirmDialog } from './components/data-grid/confirm-dialog/confirm-dialog';
 export { ActionCell } from './components/data-grid/renderers/action-cell';
 export { ActionHeader } from './components/data-grid/renderers/action-header';
 export { NEW_ROW } from './components/data-grid/data-grid.types';
@@ -21,9 +23,15 @@ export type {
   DataGridConfig,
   DataGridFeatures,
   DataGridHistoryConfig,
+  DataGridEditMode,
+  DataGridFieldConfig,
+  DataGridFieldType,
+  DataGridSelectOption,
   MaybeNewRow,
 } from './components/data-grid/data-grid.types';
 export type { HistoryDialogData } from './components/data-grid/history-dialog/history-dialog';
+export type { EditFormDialogData } from './components/data-grid/edit-form-dialog/edit-form-dialog';
+export type { ConfirmDialogData } from './components/data-grid/confirm-dialog/confirm-dialog';
 
 // Services
 export { ErrorService } from './services/error/error.service';

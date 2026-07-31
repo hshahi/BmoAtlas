@@ -40,6 +40,40 @@ export interface DataGridHistoryConfig<H> {
   title?: string;
 }
 
+/** How add/edit are performed. */
+export type DataGridEditMode = 'inline' | 'popup';
+
+/** Control type rendered for a field in the popup edit form. */
+export type DataGridFieldType = 'text' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
+
+/** An option for a select field. */
+export interface DataGridSelectOption {
+  value: unknown;
+  label: string;
+}
+
+/**
+ * Describes one editable property for the generic popup form. The form renders a
+ * matching Angular Material control per `type` and adjusts to however many fields
+ * are supplied.
+ */
+export interface DataGridFieldConfig {
+  /** Property name on the row. */
+  key: string;
+  /** Field label. */
+  label: string;
+  /** Material control to render (default 'text'). */
+  type?: DataGridFieldType;
+  /** Options for `type: 'select'`. */
+  options?: DataGridSelectOption[];
+  /** Mark the field required (signal-forms validator). */
+  required?: boolean;
+  /** Min / max / step for `type: 'number'`. */
+  min?: number;
+  max?: number;
+  step?: number;
+}
+
 /**
  * Everything the generic {@link DataGridPresenter} needs to render. The action
  * column (pinned-left, header-less body with history/edit icons; header cell with
@@ -60,4 +94,11 @@ export interface DataGridConfig<T, H = unknown> {
   history?: DataGridHistoryConfig<H>;
   /** Bounded grid height (must NOT be autoHeight for load-more to work). Default '480px'. */
   gridHeight?: string;
+  /**
+   * Field descriptors for the popup edit form (add/edit). If omitted, the form
+   * falls back to the editable columns rendered as text inputs.
+   */
+  editFields?: DataGridFieldConfig[];
+  /** Show a confirmation popup before delete. Default true. */
+  confirmDelete?: boolean;
 }
