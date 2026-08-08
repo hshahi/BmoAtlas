@@ -48,3 +48,23 @@ export { GlobalErrorHandler } from './handlers/global-error.handler';
 
 // AG Grid
 export { atlasGridTheme, registerAtlasGrid } from './ag-grid/atlas-grid';
+
+// AG Grid — Material date components (Luxon adapter)
+export { DateCellEditor } from './ag-grid/date/date-cell-editor';
+export { DateFilter } from './ag-grid/date/date-filter';
+export { DateFloatingFilter } from './ag-grid/date/date-floating-filter';
+export {
+  DEFAULT_DATE_FORMAT,
+  buildLuxonFormats,
+  applyDateFormat,
+  toDateTime,
+  toJsDate,
+  formatDate,
+  compareDatesByDay,
+  toModelString,
+  fromModelString,
+} from './ag-grid/date/date-support';
+export type { DateFilterModel } from './ag-grid/date/date-support';
+export type { DateCellEditorParams } from './ag-grid/date/date-cell-editor';
+export type { DateFilterParams, DateFilterComparator } from './ag-grid/date/date-filter';
+export type { DateFloatingFilterParams } from './ag-grid/date/date-floating-filter';

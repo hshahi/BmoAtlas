@@ -4,15 +4,35 @@ import { AgGridAngular } from 'ag-grid-angular';
 import type {
   ColDef,
   ValueFormatterParams,
+  ValueGetterParams,
   CellClassParams,
   GridApi,
   GridReadyEvent,
   GetRowIdParams,
 } from 'ag-grid-community';
 import { HttpClientData } from '@core';
-import { AtlasLoader } from '@shared';
+import {
+  AtlasLoader,
+  DateCellEditor, DateFilter, DateFloatingFilter,
+  formatDate, compareDatesByDay, DEFAULT_DATE_FORMAT,
+} from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
 import '@aejkatappaja/phantom-ui';
+
+/** Date column display: dd-MMM-yyyy, with the pinned footer showing a label. */
+const dateFmt = (p: ValueFormatterParams<StockEntry, Date>): string =>
+  p.node?.rowPinned ? 'Avg / Total' : formatDate(p.value, DEFAULT_DATE_FORMAT);
+
+/** A derived-date formatter (blank on the pinned footer / when empty). */
+const derivedDateFmt = (fmt: string) => (p: ValueFormatterParams<StockEntry, Date>): string =>
+  formatDate(p.value, fmt);
+
+/** Add whole days to a date (used to derive the demo date columns). Null-safe. */
+const addDays = (d: Date | null | undefined, n: number): Date | null =>
+  d ? new Date(d.getFullYear(), d.getMonth(), d.getDate() + n) : null;
+
+const dateValueGetter = (offset: number) =>
+  (p: ValueGetterParams<StockEntry>): Date | null => addDays(p.data?.date, offset);
 
 const money = (p: ValueFormatterParams<StockEntry, number>): string =>
   p.value == null ? '' : Number(p.value).toFixed(2);
@@ -124,6 +144,8 @@ const changeClass = (p: CellClassParams<StockEntry, number>): string =>
             [quickFilterText]="quickFilter()"
             [getRowId]="getRowId"
             [domLayout]="'autoHeight'"
+            [singleClickEdit]="true"
+            [stopEditingWhenCellsLoseFocus]="false"
             (gridReady)="onGridReady($event)"
           />
         </phantom-ui>
@@ -369,14 +391,97 @@ export class SummaryPresenter {
     sortable: true,
     resizable: true,
     filter: true,
-    floatingFilter: true,
+    floatingFilter: false,
     enableCellChangeFlash: true,
     flex: 1,
     minWidth: 80,
   };
 
   protected readonly columnDefs: ColDef<StockEntry>[] = [
-    { field: 'date', headerName: 'Date', minWidth: 110, cellClass: 'font-mono', filter: 'agTextColumnFilter' },
+    {
+      field: 'date', headerName: 'Date', minWidth: 185, cellClass: 'font-mono',
+      valueFormatter: dateFmt,
+      comparator: compareDatesByDay,
+      // Inline editing via the Material datepicker (single click opens it).
+      // NOT a popup editor — a popup floats over the cell while the cell's own
+      // formatted value still renders underneath (two dates). Inline replaces the
+      // cell content; the calendar still opens in its own body-level overlay.
+      editable: (p) => !p.node?.rowPinned,
+      cellEditor: DateCellEditor,
+      cellEditorParams: { dateFormat: DEFAULT_DATE_FORMAT },
+      // ① Live: selecting a date applies + closes the popup; Cancel clears + closes.
+      filter: DateFilter,
+      filterParams: { dateFormat: DEFAULT_DATE_FORMAT, buttons: ['cancel'], closeOnSelect: true },
+      floatingFilter: false,
+      floatingFilterComponent: DateFloatingFilter,
+      floatingFilterComponentParams: { dateFormat: DEFAULT_DATE_FORMAT },
+    },
+
+    // ② Settlement — typed entry + Apply/Clear (buffered; no auto-open calendar).
+    {
+      colId: 'settlement', headerName: 'Settlement · type+Apply', minWidth: 190, cellClass: 'font-mono',
+      valueGetter: dateValueGetter(2),
+      valueFormatter: derivedDateFmt(DEFAULT_DATE_FORMAT),
+      comparator: compareDatesByDay,
+      filter: DateFilter,
+      // Popup stays open while you type/pick; only Apply or Cancel closes it.
+      filterParams: { dateFormat: DEFAULT_DATE_FORMAT, allowTyping: true, buttons: ['cancel', 'apply'] },
+      floatingFilter: false,
+      floatingFilterComponent: DateFloatingFilter,
+      floatingFilterComponentParams: { dateFormat: DEFAULT_DATE_FORMAT },
+    },
+
+    // ③ Value Date — In-range by default, bounded by min/max, custom comparator.
+    {
+      colId: 'valueDate', headerName: 'Value Date · range+bounds', minWidth: 200, cellClass: 'font-mono',
+      valueGetter: dateValueGetter(30),
+      valueFormatter: derivedDateFmt(DEFAULT_DATE_FORMAT),
+      comparator: compareDatesByDay,
+      filter: DateFilter,
+      filterParams: {
+        dateFormat: DEFAULT_DATE_FORMAT,
+        defaultCondition: 'inRange',
+        min: new Date(2015, 0, 1),
+        max: new Date(2030, 11, 31),
+        comparator: (filterDate: Date, cellDate: Date) => compareDatesByDay(cellDate, filterDate),
+        // Waits for the user: Apply commits, Cancel discards; either closes the popup.
+        buttons: ['cancel', 'apply'],
+      },
+      floatingFilter: false,
+      floatingFilterComponent: DateFloatingFilter,
+      floatingFilterComponentParams: { dateFormat: DEFAULT_DATE_FORMAT },
+    },
+
+    // ④ Reported — two conditions with a Material AND/OR toggle + Apply/Clear.
+    {
+      colId: 'reported', headerName: 'Reported · AND/OR', minWidth: 190, cellClass: 'font-mono',
+      valueGetter: dateValueGetter(-1),
+      valueFormatter: derivedDateFmt(DEFAULT_DATE_FORMAT),
+      comparator: compareDatesByDay,
+      filter: DateFilter,
+      filterParams: {
+        dateFormat: DEFAULT_DATE_FORMAT,
+        maxConditions: 2,
+        defaultJoinOperator: 'OR',
+        // Popup stays open until Apply or Cancel.
+        buttons: ['cancel', 'apply'],
+      },
+      floatingFilter: false,
+      floatingFilterComponent: DateFloatingFilter,
+      floatingFilterComponentParams: { dateFormat: DEFAULT_DATE_FORMAT },
+    },
+
+    // ⑤ Ex-Div — per-column format (yyyy/MM/dd) + no floating filter (header funnel).
+    {
+      colId: 'exDiv', headerName: 'Ex-Div · yyyy/MM/dd · menu', minWidth: 180, cellClass: 'font-mono',
+      valueGetter: dateValueGetter(15),
+      valueFormatter: derivedDateFmt('yyyy/MM/dd'),
+      comparator: compareDatesByDay,
+      filter: DateFilter,
+      filterParams: { dateFormat: 'yyyy/MM/dd', closeOnSelect: true },
+      floatingFilter: false,
+    },
+
     { field: 'open', headerName: 'Open', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
     { field: 'high', headerName: 'High', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
     { field: 'low', headerName: 'Low', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
@@ -386,7 +491,7 @@ export class SummaryPresenter {
   ];
 
   /** Stable row identity so refreshed data flashes changed cells (not full re-render). */
-  protected readonly getRowId = (p: GetRowIdParams<StockEntry>): string => p.data.date;
+  protected readonly getRowId = (p: GetRowIdParams<StockEntry>): string => p.data.id;
 
   getTopEntries(data: StockData): StockEntry[] {
     return data.entries.slice(0, 12);
@@ -407,7 +512,8 @@ export class SummaryPresenter {
 
     return [
       new StockEntry({
-        date: 'Avg / Total',
+        // No date on the footer — the column's valueFormatter labels it 'Avg / Total'.
+        id: 'summary',
         open: avg(e => e.open),
         high: avg(e => e.high),
         low: avg(e => e.low),

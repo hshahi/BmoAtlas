@@ -192,3 +192,12 @@
 .mat-mdc-select-arrow svg {
   transform: translate(-50%, -50%) scale(1.7) !important;
 }
+
+/* AG Grid draws its own border + shadow on a cell in edit mode. For the Material
+   date cell editor that doubles up with the field's outline — an extra horizontal
+   line above the text. Suppress AG's editing border/shadow for those cells so the
+   field's own outline is the single visible box. */
+.ag-cell-inline-editing:has(app-date-cell-editor) {
+  border-color: transparent !important;
+  box-shadow: none !important;
+}

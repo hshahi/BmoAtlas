@@ -6,7 +6,8 @@
       "Bash(command -v powershell.exe)",
       "Bash(powershell.exe -NoProfile -Command 'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -like '\\\\''*ng*serve*4321*'\\\\'' } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }')",
       "Bash(node tmp-popup.mjs)",
-      "Bash(node tmp-del.mjs)"
+      "Bash(node tmp-del.mjs)",
+      "PowerShell(npm install @angular/material-luxon-adapter luxon --save 2>&1 | Select-Object -Last 4; npm install @types/luxon --save-dev 2>&1 | Select-Object -Last 4; \"\"; \"adapter: \" + \\(Get-Content node_modules/@angular/material-luxon-adapter/package.json | ConvertFrom-Json\\).version; \"luxon: \" + \\(Get-Content node_modules/luxon/package.json | ConvertFrom-Json\\).version)"
     ]
   }
 }

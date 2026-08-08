@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { HttpClientData } from '@core';
-import { LoadWrapperClientData, AtlasLoader } from '@shared';
+import { LoadWrapperClientData, AtlasLoader, formatDate } from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
 
 @Component({
@@ -21,10 +21,10 @@ import { StockData, StockEntry } from '../../models/stock.models';
           <!-- atlas-loader wraps this section and overlays a spinner on refresh. -->
           <atlas-loader [loading]="stockData().isReloading()">
           <ul class="volume-list">
-            @for (entry of getEntries(data); track entry.date) {
+            @for (entry of getEntries(data); track entry.id) {
               <li class="volume-list__item">
                 <div class="volume-list__header">
-                  <span class="volume-list__date">{{ entry.date }}</span>
+                  <span class="volume-list__date">{{ fmtDate(entry.date) }}</span>
                   <span class="volume-list__close font-mono"
                         [class.text-gain]="entry.change >= 0"
                         [class.text-loss]="entry.change < 0">
@@ -199,6 +199,10 @@ export class BreakdownListPresenter {
 
   getEntries(data: StockData): StockEntry[] {
     return data.entries.slice(0, 10);
+  }
+
+  fmtDate(date: Date | null): string {
+    return formatDate(date);
   }
 
   getBarWidth(entry: StockEntry, data: StockData): number {

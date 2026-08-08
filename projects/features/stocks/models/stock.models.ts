@@ -32,7 +32,7 @@ export interface AlphaVantageMonthlyResponse {
  */
 export class StockEntry extends Domain<StockEntry> {
   id: string;
-  date: string;
+  date: Date | null;
   open: number;
   high: number;
   low: number;
@@ -43,8 +43,12 @@ export class StockEntry extends Domain<StockEntry> {
 
   constructor(data?: Partial<StockEntry>) {
     super(StockEntry);
-    this.id            = data?.date ?? data?.id ?? '';
-    this.date          = data?.date ?? '';
+    const rawDate = data?.date as Date | string | null | undefined;
+    // Coerce to a real Date (accepts a Date, an ISO string, or null).
+    this.date          = rawDate instanceof Date ? rawDate : (rawDate ? new Date(rawDate) : null);
+    // id stays a stable string key (the ISO date, or an explicit id).
+    this.id            = data?.id ?? (typeof rawDate === 'string' ? rawDate
+                          : this.date ? this.date.toISOString().slice(0, 10) : '');
     this.open          = data?.open ?? 0;
     this.high          = data?.high ?? 0;
     this.low           = data?.low ?? 0;
@@ -162,7 +166,9 @@ export function parseMonthlyResponse(raw: unknown): StockData {
     const changePercent = prevClose !== 0 ? (change / prevClose) * 100 : 0;
 
     return StockEntry.fromJson({
-      date,
+      id: date,
+      // Parse as local midnight so the displayed day doesn't shift by timezone.
+      date: new Date(`${date}T00:00:00`),
       open,
       high: parseFloat(entry['2. high']),
       low: parseFloat(entry['3. low']),

@@ -1,7 +1,10 @@
 import { Component, ChangeDetectionStrategy, input } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import type { ColDef, ValueFormatterParams, CellClassParams } from 'ag-grid-community';
+import { formatDate } from '@shared';
 import { StockData, StockEntry } from '../models/stock.models';
+
+const dateFmt = (p: ValueFormatterParams<StockEntry, Date>): string => formatDate(p.value);
 
 const money = (p: ValueFormatterParams<StockEntry, number>): string =>
   p.value == null ? '' : Number(p.value).toFixed(2);
@@ -47,7 +50,7 @@ export class StockPriceTable {
   };
 
   protected readonly columnDefs: ColDef<StockEntry>[] = [
-    { field: 'date', headerName: 'Date', minWidth: 110, cellClass: 'font-mono' },
+    { field: 'date', headerName: 'Date', minWidth: 120, cellClass: 'font-mono', valueFormatter: dateFmt },
     { field: 'open', headerName: 'Open', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono' },
     { field: 'close', headerName: 'Close', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono font-bold' },
     { field: 'high', headerName: 'High', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono text-gain' },
