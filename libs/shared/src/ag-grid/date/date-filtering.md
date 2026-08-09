@@ -187,43 +187,77 @@ Grid then shows a **filter funnel in the header** that opens the same `DateFilte
 
 ---
 
-## Worked examples (the summary grid's 5 date columns)
+## Scenarios (recipes)
 
-Each column demonstrates a different configuration of the **same** components.
+Every scenario is just a different `filterParams` (and column) configuration of the
+**same** components — mix and match as your use case needs.
+
+| Scenario | Key `filterParams` (+ column options) |
+|---|---|
+| Instant single-date filter | `buttons: ['cancel'], closeOnSelect: true` |
+| Typed entry, buffered Apply/Cancel | `allowTyping: true, buttons: ['cancel', 'apply']` |
+| Date range with bounds + comparator | `defaultCondition: 'inRange', min, max, comparator, buttons: ['cancel', 'apply']` |
+| Two conditions (AND/OR) | `maxConditions: 2, defaultJoinOperator, buttons: ['cancel', 'apply']` |
+| Custom format, header funnel | `dateFormat`, `closeOnSelect: true` + `floatingFilter: false` |
+
+### Full column wiring (filter + floating filter + inline editor)
 
 ```ts
-// ① Date — live; pick applies + closes; Cancel clears + closes.
-filter: DateFilter,
-filterParams: { dateFormat, buttons: ['cancel'], closeOnSelect: true },
-floatingFilter: true, floatingFilterComponent: DateFloatingFilter,
-cellEditor: DateCellEditor,            // + inline editing
+{
+  field: 'myDate',                          // or a valueGetter that returns a Date
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  // inline editing
+  editable: (p) => !p.node?.rowPinned,
+  cellEditor: DateCellEditor,
+  cellEditorParams: { dateFormat: 'dd-MMM-yyyy' },
+  // filter + floating filter
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy' },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
 
-// ② Settlement — typed entry + Apply/Cancel; popup stays open until a button.
-filterParams: { dateFormat, allowTyping: true, buttons: ['cancel', 'apply'] },
+### Instant single-date filter
+Pick a date → it applies immediately and the popup closes; **Cancel** clears it.
+```ts
+filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['cancel'], closeOnSelect: true }
+```
 
-// ③ Value Date — In-range default, bounded by min/max, custom comparator, Apply/Cancel.
+### Typed entry with Apply / Cancel (buffered)
+Type or pick freely; nothing filters until **Apply**. The popup stays open while you
+edit; **Apply** commits, **Cancel** clears — both close it.
+```ts
+filterParams: { dateFormat: 'dd-MMM-yyyy', allowTyping: true, buttons: ['cancel', 'apply'] }
+```
+
+### Date range with bounds + custom comparator
+Defaults to a From/To range, restricts the selectable dates, and overrides matching.
+```ts
 filterParams: {
-  dateFormat, defaultCondition: 'inRange',
-  min: new Date(2015,0,1), max: new Date(2030,11,31),
-  comparator: (f, c) => compareDatesByDay(c, f),
+  defaultCondition: 'inRange',
+  min: new Date(2015, 0, 1),
+  max: new Date(2030, 11, 31),
+  comparator: (filterDate, cellDate) => compareDatesByDay(cellDate, filterDate),
   buttons: ['cancel', 'apply'],
-},
+}
+```
 
-// ④ Reported — two conditions with a Material AND/OR toggle + Apply/Cancel.
-filterParams: { dateFormat, maxConditions: 2, defaultJoinOperator: 'OR', buttons: ['cancel', 'apply'] },
+### Two conditions with AND / OR
+Shows a Material AND/OR toggle + a second condition row; emits a combined model.
+```ts
+filterParams: { maxConditions: 2, defaultJoinOperator: 'OR', buttons: ['cancel', 'apply'] }
+```
 
-// ⑤ Ex-Div — per-column format + no floating filter (header funnel); pick applies + closes.
+### Custom per-column format, no floating filter (header funnel)
+A different display/parse format; with no floating filter the filter opens from the
+header funnel.
+```ts
 filterParams: { dateFormat: 'yyyy/MM/dd', closeOnSelect: true },
 floatingFilter: false,
 ```
-
-| Column | Demonstrates |
-|---|---|
-| **Date** | baseline live filter; pick → apply + close; Cancel → clear + close; inline Material editor |
-| **Settlement** | typed entry, buffered Apply/Cancel, popup stays open while editing |
-| **Value Date** | `inRange` range, `min`/`max` bounds, custom `comparator`, Apply/Cancel |
-| **Reported** | two-condition **AND/OR** (Material), Apply/Cancel |
-| **Ex-Div** | per-column format `yyyy/MM/dd`; no floating filter → header funnel |
 
 ---
 

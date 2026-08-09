@@ -9,6 +9,7 @@ import { RouterLink } from '@angular/router';
       <p class="home__welcome">🌐 Welcome to Atlas</p>
       <a class="home__link" routerLink="/material">Angular Material showcase →</a>
       <a class="home__link" routerLink="/front-office/stocks/grid">Generic data grid demo →</a>
+      <a class="home__link" routerLink="/dialogs">Dialog service showcase →</a>
     </div>
   `,
   styles: [`

@@ -11,11 +11,26 @@ export type {
 } from './components/load-wrapper-client-data/load-wrapper-client-data';
 export { AtlasLoader } from './components/atlas-loader/atlas-loader';
 
+// Reusable dialogs (confirm / warning / signal-form) + service
+export { DialogService } from './components/dialog/dialog.service';
+export { ConfirmDialog } from './components/dialog/confirm-dialog/confirm-dialog';
+export { WarningDialog } from './components/dialog/warning-dialog/warning-dialog';
+export { FormDialog } from './components/dialog/form-dialog/form-dialog';
+export { DEFAULT_FORM_BUTTONS } from './components/dialog/dialog.types';
+export type {
+  ConfirmDialogData,
+  WarningDialogData,
+  DialogButton,
+  DialogButtonRole,
+  SignalForm,
+  FormDialogContent,
+  FormDialogConfig,
+} from './components/dialog/dialog.types';
+
 // Generic data grid (container/presenter)
 export { DataGridPresenter } from './components/data-grid/data-grid-presenter';
 export { HistoryDialog } from './components/data-grid/history-dialog/history-dialog';
 export { EditFormDialog } from './components/data-grid/edit-form-dialog/edit-form-dialog';
-export { ConfirmDialog } from './components/data-grid/confirm-dialog/confirm-dialog';
 export { ActionCell } from './components/data-grid/renderers/action-cell';
 export { ActionHeader } from './components/data-grid/renderers/action-header';
 export { NEW_ROW } from './components/data-grid/data-grid.types';
@@ -31,7 +46,6 @@ export type {
 } from './components/data-grid/data-grid.types';
 export type { HistoryDialogData } from './components/data-grid/history-dialog/history-dialog';
 export type { EditFormDialogData } from './components/data-grid/edit-form-dialog/edit-form-dialog';
-export type { ConfirmDialogData } from './components/data-grid/confirm-dialog/confirm-dialog';
 
 // Services
 export { ErrorService } from './services/error/error.service';

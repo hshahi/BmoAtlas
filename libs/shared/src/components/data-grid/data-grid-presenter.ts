@@ -32,7 +32,8 @@ import { ActionCell, ActionCellParams } from './renderers/action-cell';
 import { ActionHeader, ActionHeaderParams } from './renderers/action-header';
 import { HistoryDialog, HistoryDialogData } from './history-dialog/history-dialog';
 import { EditFormDialog, EditFormDialogData } from './edit-form-dialog/edit-form-dialog';
-import { ConfirmDialog, ConfirmDialogData } from './confirm-dialog/confirm-dialog';
+import { ConfirmDialog } from '../dialog/confirm-dialog/confirm-dialog';
+import type { ConfirmDialogData } from '../dialog/dialog.types';
 
 /**
  * Generic, reusable AG Grid presenter (container/presenter). Renders any row type

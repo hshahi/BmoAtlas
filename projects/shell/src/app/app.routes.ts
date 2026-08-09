@@ -16,6 +16,14 @@ export const routes: Routes = [
     data: { breadcrumb: 'Material Showcase' },
   },
 
+  // ── Dialog service showcase ──────────────────────────────
+  {
+    path: 'dialogs',
+    loadComponent: () =>
+      import('./pages/dialog-showcase/dialog-showcase').then(m => m.DialogShowcase),
+    data: { breadcrumb: 'Dialog Showcase' },
+  },
+
   // ── Search (page discovery) ─────────────────────────────
   {
     path: 'search',

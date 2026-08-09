@@ -201,3 +201,16 @@
   border-color: transparent !important;
   box-shadow: none !important;
 }
+
+/* Shared dialogs (DialogService): a 3px border on the surface + a yellow tone for
+   the warning variant. The shell fills the surface edge-to-edge (no padding). */
+.sh-dialog-pane .mat-mdc-dialog-surface {
+  border: 2px solid var(--color-border);
+  padding: 0;
+  overflow: hidden;
+}
+.sh-dialog-pane--warning .mat-mdc-dialog-surface {
+  border-color: var(--color-warning);
+  /* yellow wash across the whole warning dialog */
+  background: color-mix(in srgb, var(--color-warning) 20%, var(--color-bg-surface));
+}
