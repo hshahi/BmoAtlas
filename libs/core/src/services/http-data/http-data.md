@@ -87,6 +87,7 @@ interface DataOptions<T, TBody = unknown> {
   parse?: (response: unknown) => T;
   reportProgress?: boolean;
   delay?: number;
+  minDelay?: number;
 }
 ```
 
@@ -101,6 +102,7 @@ interface DataOptions<T, TBody = unknown> {
 | `parse` | Transform function applied to the raw HTTP response before it becomes the resource value. Useful for validation (e.g. Zod) or shape mapping. |
 | `reportProgress` | When `true`, enables progress events accessible via the `progress` signal. |
 | `delay` | Delay in milliseconds before the `httpResource` is created. The status transitions to `'loading'` immediately; the actual resource creation happens after the delay. The delay only applies to the first `load()` call — subsequent calls (reloads) bypass the delay. Useful for debouncing or showing a loading indicator before the request starts. |
+| `minDelay` | Minimum loading time in milliseconds, measured from when the resource **starts loading** (i.e. after any `delay`). If the response resolves sooner, the loading state (`status`/`isLoading`/`isPending`) is **held** until this floor elapses, so a fast response doesn't blink the loader; naturally slower responses are unaffected. **GET only**, and re-armed on `reload()`. Errors surface immediately — they are never held. Composes with `delay` (total visible loading = `delay` + `max(actualResponseTime, minDelay)`). |
 
 ## API
 

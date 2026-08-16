@@ -5,18 +5,23 @@ import type {
   ColDef,
   ValueFormatterParams,
   ValueGetterParams,
+  ValueParserParams,
+  EditableCallbackParams,
   CellClassParams,
   GridApi,
   GridReadyEvent,
   GetRowIdParams,
+  IRowNode,
 } from 'ag-grid-community';
 import { HttpClientData } from '@core';
 import {
-  AtlasLoader,
+  DialogService,
   DateCellEditor, DateFilter, DateFloatingFilter,
   formatDate, compareDatesByDay, DEFAULT_DATE_FORMAT,
 } from '@shared';
 import { StockData, StockEntry } from '../../models/stock.models';
+import { SummaryActionCell, SummaryActionCellParams } from './summary-action-cell';
+import { SummaryActionHeader, SummaryActionHeaderParams } from './summary-action-header';
 import '@aejkatappaja/phantom-ui';
 
 /** Date column display: dd-MMM-yyyy, with the pinned footer showing a label. */
@@ -52,9 +57,17 @@ const percent = (p: ValueFormatterParams<StockEntry, number>): string => {
 const changeClass = (p: CellClassParams<StockEntry, number>): string =>
   `font-mono ${(p.value ?? 0) >= 0 ? 'text-gain' : 'text-loss'}`;
 
+/** Keep edited numeric cells numeric; fall back to the old value on junk input. */
+const numberParser = (p: ValueParserParams<StockEntry, number>): number => {
+  const n = Number(p.newValue);
+  return Number.isNaN(n) ? (p.oldValue ?? 0) : n;
+};
+
 @Component({
   selector: 'app-summary-presenter',
-  imports: [AgGridAngular, AtlasLoader],
+  imports: [AgGridAngular],
+  // SummaryActionCell is referenced imperatively as an AG Grid cellRenderer (not in
+  // the template), so it doesn't need to be listed in `imports`.
   template: `
     <div class="summary">
       <div class="summary__header">
@@ -369,6 +382,26 @@ export class SummaryPresenter {
   onLoadLocal = input<(() => void) | undefined>(undefined);
 
   private readonly router = inject(Router);
+  private readonly dialog = inject(DialogService);
+
+  /** id of the row currently in an edit session (null = none). Drives which
+   *  action icons show (edit/delete vs save/cancel) and which cells are editable. */
+  private readonly editingKey = signal<string | null>(null);
+
+  /** True when the current edit session is a freshly-added row (Cancel removes it
+   *  instead of reverting). */
+  private readonly editingIsNew = signal(false);
+
+  /** Snapshot of a row's values when an *existing* row's edit session opens. */
+  private editSnapshot: StockEntry | null = null;
+
+  /** Monotonic counter for unique blank-row ids. */
+  private newRowCounter = 0;
+
+  /** A data cell is editable only while its own row is in an edit session — so
+   *  editing is entered exclusively via the Edit button, never a stray click. */
+  private readonly cellEditable = (p: EditableCallbackParams<StockEntry>): boolean =>
+    !!p.data && !p.node?.rowPinned && this.editingKey() === p.data.id;
 
   /** Global quick-filter term (searches across all columns). */
   protected readonly quickFilter = signal('');
@@ -398,15 +431,37 @@ export class SummaryPresenter {
   };
 
   protected readonly columnDefs: ColDef<StockEntry>[] = [
+    // Pinned-left action column: no header; per-row Edit/Delete (idle) or
+    // Save/Cancel (while editing). Bespoke to this grid — see SummaryActionCell.
+    {
+      colId: '__actions',
+      headerName: '',
+      pinned: 'left',
+      width: 92, minWidth: 92,
+      sortable: false, filter: false, resizable: false, editable: false,
+      suppressMovable: true, lockPosition: 'left',
+      // Header holds the "New row" (+) button, above the first column.
+      headerComponent: SummaryActionHeader,
+      headerComponentParams: {
+        onNew: () => this.insertNewRow(),
+      } as Partial<SummaryActionHeaderParams>,
+      cellRenderer: SummaryActionCell,
+      cellRendererParams: {
+        isEditing: (row: StockEntry) => this.editingKey() === row.id,
+        onEdit: (row: StockEntry) => this.startEdit(row),
+        onDelete: (row: StockEntry) => this.requestDelete(row),
+        onSave: (row: StockEntry) => this.saveRow(row),
+        onCancel: (row: StockEntry) => this.cancelRow(row),
+      } as Partial<SummaryActionCellParams>,
+    },
+
     {
       field: 'date', headerName: 'Date', minWidth: 185, cellClass: 'font-mono',
       valueFormatter: dateFmt,
       comparator: compareDatesByDay,
-      // Inline editing via the Material datepicker (single click opens it).
-      // NOT a popup editor — a popup floats over the cell while the cell's own
-      // formatted value still renders underneath (two dates). Inline replaces the
-      // cell content; the calendar still opens in its own body-level overlay.
-      editable: (p) => !p.node?.rowPinned,
+      // Editable only during an edit session (like the numeric cells): the Material
+      // date-picker editor opens so a date can be selected, and it persists on Save.
+      editable: this.cellEditable,
       cellEditor: DateCellEditor,
       cellEditorParams: { dateFormat: DEFAULT_DATE_FORMAT },
       // ① Live: selecting a date applies + closes the popup; Cancel clears + closes.
@@ -482,11 +537,13 @@ export class SummaryPresenter {
       floatingFilter: false,
     },
 
-    { field: 'open', headerName: 'Open', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
-    { field: 'high', headerName: 'High', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
-    { field: 'low', headerName: 'Low', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
-    { field: 'close', headerName: 'Close', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono font-bold', filter: 'agNumberColumnFilter' },
-    { field: 'volume', headerName: 'Volume', type: 'rightAligned', valueFormatter: volume, cellClass: 'font-mono', filter: 'agNumberColumnFilter' },
+    // Numeric OHLCV columns are editable during an edit session (agNumberCellEditor).
+    { field: 'open', headerName: 'Open', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter', editable: this.cellEditable, cellEditor: 'agNumberCellEditor', valueParser: numberParser },
+    { field: 'high', headerName: 'High', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter', editable: this.cellEditable, cellEditor: 'agNumberCellEditor', valueParser: numberParser },
+    { field: 'low', headerName: 'Low', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono', filter: 'agNumberColumnFilter', editable: this.cellEditable, cellEditor: 'agNumberCellEditor', valueParser: numberParser },
+    { field: 'close', headerName: 'Close', type: 'rightAligned', valueFormatter: money, cellClass: 'font-mono font-bold', filter: 'agNumberColumnFilter', editable: this.cellEditable, cellEditor: 'agNumberCellEditor', valueParser: numberParser },
+    { field: 'volume', headerName: 'Volume', type: 'rightAligned', valueFormatter: volume, cellClass: 'font-mono', filter: 'agNumberColumnFilter', editable: this.cellEditable, cellEditor: 'agNumberCellEditor', valueParser: numberParser },
+    // Change % is derived — left read-only.
     { field: 'changePercent', headerName: 'Change', type: 'rightAligned', valueFormatter: percent, cellClass: changeClass, filter: 'agNumberColumnFilter' },
   ];
 
@@ -526,6 +583,110 @@ export class SummaryPresenter {
 
   protected onGridReady(event: GridReadyEvent<StockEntry>): void {
     this.gridApi = event.api;
+  }
+
+  // ── Row edit session (Edit → Save/Cancel), mirroring the data-grid feature ──
+  // Editing is a session: the Edit button opens it (a snapshot is taken, the row's
+  // numeric cells become editable, the first opens for editing, icons switch to
+  // Save/Cancel). It ends only on Save (commit) or Cancel (restore snapshot).
+  // Mutations are local to the grid — this feed is a read-only GET.
+
+  /** New — insert a blank row at the top and open its edit session on the date. */
+  private insertNewRow(): void {
+    const api = this.gridApi;
+    if (!api || this.editingKey() !== null) return; // one session at a time
+
+    const row = new StockEntry({ id: `__new-${++this.newRowCounter}`, date: null });
+    api.applyTransaction({ add: [row], addIndex: 0 });
+
+    this.editingKey.set(row.id);
+    this.editingIsNew.set(true);
+    this.editSnapshot = null;
+
+    const node = api.getRowNode(row.id);
+    if (node) this.refreshActions(node);
+    this.beginEditingCell(node?.rowIndex ?? 0, 'date');
+  }
+
+  private startEdit(row: StockEntry): void {
+    const api = this.gridApi;
+    if (!api) return;
+
+    this.editingKey.set(row.id);
+    this.editingIsNew.set(false);
+    this.editSnapshot = { ...row } as StockEntry;
+
+    const node = api.getRowNode(row.id);
+    if (node) this.refreshActions(node);
+    this.beginEditingCell(node?.rowIndex ?? null, 'open');
+  }
+
+  /**
+   * Open a cell editor on the next tick. Deferring matters because edits are
+   * triggered from icon-button clicks: starting synchronously opens the editor,
+   * then focus returns to the button and `stopEditingWhenCellsLoseFocus` closes
+   * it. Running after the click settles lets the editor keep focus — and lets the
+   * `editable` callback re-evaluate now that the session is open.
+   */
+  private beginEditingCell(rowIndex: number | null, colKey: string): void {
+    if (rowIndex == null) return;
+    setTimeout(() => {
+      const api = this.gridApi;
+      if (!api) return;
+      api.ensureIndexVisible(rowIndex);
+      api.setFocusedCell(rowIndex, colKey);
+      api.startEditingCell({ rowIndex, colKey });
+    });
+  }
+
+  /** Save — commit the open editor into the row and close the session. */
+  private saveRow(row: StockEntry): void {
+    const api = this.gridApi;
+    if (!api) return;
+    api.stopEditing(false); // commit the editor's value into the node
+    this.endEditSession(api.getRowNode(row.id));
+  }
+
+  /** Cancel — a new row is removed; an existing row reverts to its snapshot. */
+  private cancelRow(row: StockEntry): void {
+    const api = this.gridApi;
+    if (!api) return;
+    api.stopEditing(true); // cancel the open editor
+
+    if (this.editingIsNew()) {
+      api.applyTransaction({ remove: [row] });
+      this.endEditSession(undefined);
+      return;
+    }
+
+    const node = api.getRowNode(row.id);
+    // Clicking Cancel may have already committed the open editor, and tabbing
+    // across cells commits each — so an explicit snapshot restore is what reverts.
+    if (node && this.editSnapshot) node.setData(this.editSnapshot);
+    this.endEditSession(node);
+  }
+
+  private endEditSession(node: IRowNode<StockEntry> | undefined): void {
+    this.editingKey.set(null);
+    this.editingIsNew.set(false);
+    this.editSnapshot = null;
+    if (node) this.refreshActions(node);
+  }
+
+  /** Re-render one row's action cell so it reflects the idle/editing state. */
+  private refreshActions(node: IRowNode<StockEntry>): void {
+    this.gridApi?.refreshCells({ rowNodes: [node], columns: ['__actions'], force: true });
+  }
+
+  /** Delete — confirm, then remove the row locally. */
+  private async requestDelete(row: StockEntry): Promise<void> {
+    const ok = await this.dialog.confirm({
+      title: 'Delete row',
+      message: 'Are you sure you want to delete this row? This action cannot be undone.',
+      confirmText: 'Delete',
+      danger: true,
+    });
+    if (ok) this.gridApi?.applyTransaction({ remove: [row] });
   }
 
   protected onQuickFilter(event: Event): void {

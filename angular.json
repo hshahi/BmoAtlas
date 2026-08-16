@@ -79,7 +79,11 @@
             "buildTarget": "shell:build",
             "runnerConfig": "vitest.config.ts",
             "tsConfig": "tsconfig.spec.json",
-            "include": ["libs/**/*.spec.ts"]
+            "include": [
+              "**/*.spec.ts",
+              "../../features/**/*.spec.ts",
+              "../../../libs/**/*.spec.ts"
+            ]
           }
         }
       }

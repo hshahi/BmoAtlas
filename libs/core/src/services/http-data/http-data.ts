@@ -15,6 +15,14 @@ export interface DataOptions<T, TBody = unknown> {
     reportProgress?: boolean;
     /** Delay in milliseconds before the HTTP resource is created. The status transitions to 'loading' immediately. */
     delay?: number;
+    /**
+     * Minimum loading time in milliseconds, measured from when the HTTP resource
+     * starts loading (i.e. after any `delay`). If the response resolves sooner, the
+     * loading state (`status`/`isLoading`/`isPending`) is held until this floor
+     * elapses, so a fast response doesn't blink the loader. Naturally slower
+     * responses are unaffected. GET only; errors surface immediately (not held).
+     */
+    minDelay?: number;
 }
 
 export type MutationOptions<T, TBody> = Omit<DataOptions<T, TBody>, 'method'> & {
@@ -44,6 +52,9 @@ export class HttpData<T, TBody = unknown> {
     private readonly _resource = signal<HttpResourceRef<T | undefined> | null>(null);
     private readonly _delayedStatus = signal<ResourceStatus | null>(null);
     private _delayTimer: ReturnType<typeof setTimeout> | null = null;
+    /** True while inside the `minDelay` floor after a GET starts loading. */
+    private readonly _minHoldActive = signal(false);
+    private _minDelayTimer: ReturnType<typeof setTimeout> | null = null;
     private readonly _defaultValue: T | undefined;
     private readonly _data: Signal<T | undefined>; 
     private readonly _error: Signal<unknown>; 
@@ -66,14 +77,17 @@ export class HttpData<T, TBody = unknown> {
         private readonly options: DataOptions<T, TBody>) { 
            
         this._defaultValue = options.defaultValue;
-        this._data =        computed (() => this._resource()?.value() ?? this._defaultValue); 
+        // Minimum-load floor: keep a *successful* GET presenting as loading until the
+        // floor elapses (errors are never held — they surface immediately).
+        const held = computed (() => this._minHoldActive() && this._resource()?.status() === 'resolved');
+        this._data =        computed (() => this._resource()?.value() ?? this._defaultValue);
         this._error =       computed (() => this._resource()?.error() ?? undefined);
-        this._status =      computed (() => this._delayedStatus() ?? this._resource()?.status() ?? 'idle' as ResourceStatus);
+        this._status =      computed (() => { const d = this._delayedStatus(); if (d) return d; if (held()) return 'loading'; return this._resource()?.status() ?? 'idle' as ResourceStatus; });
         this._isIdle =      computed (() => { const s = this._status(); return s === 'idle'; });
         this._isLoading =   computed (() => { const s = this._status(); return s === 'loading'; });
-        this._isReloading = computed (() => { const r = this._resource(); return r ? r.status() === 'reloading' : false; }); 
-        this._isPending =   computed (() => { const r = this._resource(); return r ? (r.status() === 'loading' || r.status() === 'reloading') : false; }); 
-        this._isSuccess =   computed (() => { const r = this._resource(); return r ? r.status() === 'resolved' : false; }); 
+        this._isReloading = computed (() => { const r = this._resource(); return r ? r.status() === 'reloading' : false; });
+        this._isPending =   computed (() => { const r = this._resource(); const p = r ? (r.status() === 'loading' || r.status() === 'reloading') : false; return p || held(); });
+        this._isSuccess =   computed (() => { const r = this._resource(); return r ? (r.status() === 'resolved' && !held()) : false; });
         this._isError =     computed (() => { const r = this._resource(); return r ? r.status() === 'error' : false; }); 
         this._isLocal =     computed (() => { const r = this._resource(); return r ? r.status() === 'local' : false; }); 
         this._hasValue =    computed (() => { const r = this._resource(); return r ? r.hasValue() : this._defaultValue !== undefined; }); 
@@ -100,10 +114,11 @@ export class HttpData<T, TBody = unknown> {
     get progress():   Signal<HttpProgressEvent | undefined> { return this._progress; }
 
     
-    reload(): void { 
+    reload(): void {
         const res = this._resource();
         if (res) {
             res.reload();
+            this.startMinDelayWindow();
         }
     }
 
@@ -127,6 +142,7 @@ export class HttpData<T, TBody = unknown> {
 
     cancel(): void {
         this.clearDelayTimer();
+        this.clearMinDelayTimer();
         const res = this._resource();
         if (!res) return;
 
@@ -139,6 +155,7 @@ export class HttpData<T, TBody = unknown> {
 
     destroy(): void {
         this.clearDelayTimer();
+        this.clearMinDelayTimer();
         const res = this._resource();
         if (res) {
             res.destroy();
@@ -172,12 +189,15 @@ export class HttpData<T, TBody = unknown> {
                     this._delayTimer = null;
                     this._delayedStatus.set(null);
                     this._resource.set(this.createResource());
+                    this.startMinDelayWindow();
                 }, delayMs);
             } else {
                 this._resource.set(this.createResource());
+                this.startMinDelayWindow();
             }
         } else {
             res.reload();
+            this.startMinDelayWindow();
         }
     }
 
@@ -187,6 +207,31 @@ export class HttpData<T, TBody = unknown> {
             this._delayTimer = null;
             this._delayedStatus.set(null);
         }
+    }
+
+    /**
+     * Arm the minimum-load floor for a fresh GET load/reload. No-op for non-GET
+     * methods or when `minDelay` is not set. Held only for successful resolves
+     * (see the `held` computed); the timer just releases the hold when it expires.
+     */
+    private startMinDelayWindow(): void {
+        const minMs = this.options.minDelay;
+        const isGet = (this.options.method ?? 'GET') === 'GET';
+        if (!minMs || !isGet) return;
+        this.clearMinDelayTimer();
+        this._minHoldActive.set(true);
+        this._minDelayTimer = setTimeout(() => {
+            this._minDelayTimer = null;
+            this._minHoldActive.set(false);
+        }, minMs);
+    }
+
+    private clearMinDelayTimer(): void {
+        if (this._minDelayTimer !== null) {
+            clearTimeout(this._minDelayTimer);
+            this._minDelayTimer = null;
+        }
+        this._minHoldActive.set(false);
     }
 
    

@@ -214,8 +214,12 @@ export class SearchPage implements OnInit, OnDestroy {
     defaultValue: [],
   });
 
-  /** Catalog entries (never undefined thanks to defaultValue) */
-  readonly catalog = this.catalogData.value as ReturnType<typeof computed<PageCatalogEntry[]>>;
+  /** Catalog entries. Guarded by `hasValue()` so reads are safe in the error
+   *  state (`httpResource.value()` throws on error) — the page shows its error
+   *  message instead of crashing. */
+  readonly catalog = computed<PageCatalogEntry[]>(() =>
+    this.catalogData.hasValue() ? this.catalogData.value()! : []
+  );
 
   /** Current search term (debounced via setTimeout) */
   readonly searchTerm = signal('');

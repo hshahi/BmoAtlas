@@ -1161,6 +1161,167 @@ describe('HttpData', () => {
     });
 
     // ---------------------------------------------------------------------------
+    // minDelay option (minimum-load floor)
+    // ---------------------------------------------------------------------------
+    describe('minDelay option', () => {
+        it('holds the loading state until the floor elapses for a fast successful GET', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem>({ url: '/api/items/1', minDelay: 1000 });
+            data.load();
+            await stabilize();
+
+            // Response arrives well within the 1000ms floor.
+            httpTesting.match('/api/items/1').forEach(req => req.flush({ id: 1, name: 'fast' }));
+            await stabilize();
+
+            // Resolved underneath, but still presented as loading (no blink).
+            expect(data.value()).toEqual({ id: 1, name: 'fast' });
+            expect(data.status()).toBe('loading');
+            expect(data.isLoading()).toBe(true);
+            expect(data.isPending()).toBe(true);
+            expect(data.isSuccess()).toBe(false);
+
+            // Advance past the floor — now it flips to resolved.
+            vi.advanceTimersByTime(1000);
+            await stabilize();
+
+            expect(data.status()).toBe('resolved');
+            expect(data.isLoading()).toBe(false);
+            expect(data.isPending()).toBe(false);
+            expect(data.isSuccess()).toBe(true);
+
+            vi.useRealTimers();
+        });
+
+        it('does not add any hold when the response is slower than the floor', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem>({ url: '/api/items/1', minDelay: 500 });
+            data.load();
+            await stabilize();
+
+            // Floor elapses before the response arrives.
+            vi.advanceTimersByTime(500);
+            await stabilize();
+
+            // Still pending — the request itself hasn't resolved yet.
+            expect(data.isPending()).toBe(true);
+            expect(data.isSuccess()).toBe(false);
+
+            httpTesting.match('/api/items/1').forEach(req => req.flush({ id: 1, name: 'slow' }));
+            await stabilize();
+
+            // Resolves immediately — no artificial hold remains.
+            expect(data.status()).toBe('resolved');
+            expect(data.isSuccess()).toBe(true);
+            expect(data.isPending()).toBe(false);
+
+            vi.useRealTimers();
+        });
+
+        it('surfaces errors immediately without holding', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem>({ url: '/api/items/1', minDelay: 1000 });
+            data.load();
+            await stabilize();
+
+            httpTesting.match('/api/items/1').forEach(req => req.flush('Boom', { status: 500, statusText: 'Server Error' }));
+            await stabilize();
+
+            // Error is shown right away, even though the floor has not elapsed.
+            expect(data.isError()).toBe(true);
+            expect(data.status()).toBe('error');
+            expect(data.isPending()).toBe(false);
+            expect(data.isLoading()).toBe(false);
+
+            vi.advanceTimersByTime(1000);
+            vi.useRealTimers();
+        });
+
+        it('ignores minDelay for non-GET methods', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem, { name: string }>({
+                url: '/api/items',
+                method: 'POST',
+                body: { name: 'x' },
+                minDelay: 1000,
+            });
+            data.load();
+            await stabilize();
+
+            httpTesting.match('/api/items').forEach(req => req.flush({ id: 1, name: 'x' }));
+            await stabilize();
+
+            // POST resolves immediately — the floor does not apply.
+            expect(data.status()).toBe('resolved');
+            expect(data.isSuccess()).toBe(true);
+            expect(data.isPending()).toBe(false);
+
+            vi.useRealTimers();
+        });
+
+        it('re-arms the floor on reload()', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem>({ url: '/api/items/1', minDelay: 1000 });
+            data.load();
+            await stabilize();
+            httpTesting.match('/api/items/1').forEach(req => req.flush({ id: 1, name: 'first' }));
+            await stabilize();
+            vi.advanceTimersByTime(1000);
+            await stabilize();
+            expect(data.isSuccess()).toBe(true);
+
+            // Reload — the floor arms again.
+            data.reload();
+            await stabilize();
+            httpTesting.match('/api/items/1').forEach(req => req.flush({ id: 1, name: 'second' }));
+            await stabilize();
+
+            // Held again despite the fast resolve; previous value stays visible.
+            expect(data.value()).toEqual({ id: 1, name: 'second' });
+            expect(data.isPending()).toBe(true);
+            expect(data.isSuccess()).toBe(false);
+
+            vi.advanceTimersByTime(1000);
+            await stabilize();
+            expect(data.isSuccess()).toBe(true);
+
+            vi.useRealTimers();
+        });
+
+        it('clears the floor when cancel() is called', async () => {
+            vi.useFakeTimers();
+
+            const data = createHttpData<TestItem>({ url: '/api/items/1', minDelay: 1000 });
+            data.load();
+            await stabilize();
+            httpTesting.match('/api/items/1').forEach(req => req.flush({ id: 1, name: 'x' }));
+            await stabilize();
+
+            // Held (fast resolve inside the floor).
+            expect(data.isPending()).toBe(true);
+            expect(data.isSuccess()).toBe(false);
+
+            // cancel() is a no-op for the resolved resource but must release the hold.
+            data.cancel();
+
+            expect(data.isPending()).toBe(false);
+            expect(data.isSuccess()).toBe(true);
+            expect(data.resource).not.toBeNull();
+
+            // No pending timer remains.
+            vi.advanceTimersByTime(1000);
+            expect(data.isSuccess()).toBe(true);
+
+            vi.useRealTimers();
+        });
+    });
+
+    // ---------------------------------------------------------------------------
     // convertParams — undefined params
     // ---------------------------------------------------------------------------
     describe('convertParams edge cases', () => {
