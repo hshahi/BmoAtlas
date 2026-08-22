@@ -19,8 +19,80 @@
       } catch(e) {}
     })();
   </script>
+  <!-- Pre-bootstrap loader (CSS-only). Lives inside <app-root>, so Angular
+       replaces it automatically once the app renders — no JS teardown needed.
+       Colour falls back to BMO blue because theme tokens (bundled CSS) aren't
+       available yet at first paint. -->
+  <style id="initial-loader-style-id">
+    .initial-loader {
+      --b: 5px; /* border thickness */
+      --n: 15; /* number of dashes*/
+      --g: 10deg; /* gap between dashes*/
+      --c: var(--color-primary, #0075be); /* themed colour, BMO-blue fallback */
+
+      width: 40px; /* size */
+      aspect-ratio: 1;
+      border-radius: 50%;
+      padding: 1px;
+
+      /* position centre */
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      margin: auto;
+
+      background: conic-gradient(#0000, var(--c)) content-box;
+      -webkit-mask: repeating-conic-gradient(
+          #0000 0deg,
+          #000 1deg calc(360deg / var(--n) - var(--g) - 1deg),
+          #0000 calc(360deg / var(--n) - var(--g)) calc(360deg / var(--n))
+        ),
+        radial-gradient(farthest-side, #0000 calc(98% - var(--b)), #000 calc(100% - var(--b)));
+      mask: repeating-conic-gradient(
+          #0000 0deg,
+          #000 1deg calc(360deg / var(--n) - var(--g) - 1deg),
+          #0000 calc(360deg / var(--n) - var(--g)) calc(360deg / var(--n))
+        ),
+        radial-gradient(farthest-side, #0000 calc(98% - var(--b)), #000 calc(100% - var(--b)));
+      -webkit-mask-composite: destination-in;
+      mask-composite: intersect;
+      animation: load 1s infinite steps(var(--n));
+    }
+    @keyframes load {
+      to {
+        transform: rotate(1turn);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .initial-loader { animation-duration: 3s; }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="initial-loader" role="status" aria-label="Loading"></div>
+  </app-root>
 </body>
 </html>
+
+<!-- Builds clean. You now have three ways to hold the pre-bootstrap spinner on screen, in main.ts:
+
+1. The constant (default 0):
+
+
+const INITIAL_LOAD_DELAY_MS = 0;   // set to e.g. 3000 to always delay 3s
+2. URL query param (no rebuild):
+
+
+http://localhost:4200/?loaderDelay=3000
+3. localStorage (no rebuild, sticky across reloads):
+
+
+localStorage.setItem('bmo-atlas-loader-delay', '3000')   // clear with removeItem
+Precedence: query param → localStorage → constant. All are clamped to ≥ 0 and ignore invalid values, and the default of 0 means zero overhead in normal/production use — the app bootstraps immediately unless you opt in.
+
+How it works: the delay just defers bootstrapApplication, and since the spinner lives inside <app-root>, it stays visible for exactly that long before Angular renders and replaces it. So ?loaderDelay=5000 gives you a clean 5-second look at the spinner.
+
+One note: this delays the whole app starting, which is the right lever for the initial index.html spinner. It's separate from the HttpData delay/minDelay knobs, which control in-app data loaders after bootstrap. -->
