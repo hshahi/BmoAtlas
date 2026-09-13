@@ -50,6 +50,7 @@ import { ComponentBase } from '@core';
             @case ('high-contrast') { 🔲 }
             @case ('catppuccin') { 🐱 }
             @case ('merged-blue') { 🟦 }
+            @case ('obsidian') { 🌑 }
           }
         </button>
         <button class="toolbar__icon-btn" (click)="menuToggle.emit()" aria-label="Toggle menu">

@@ -1,0 +1,67 @@
+/* ── Obsidian Theme — deep navy with a "white-wall" texture ────
+   Toolbar + side menu use #000029 with the white-wall pattern (white grain on
+   a transparent PNG → shows over the navy). The PNG is bundled locally at
+   libs/shared/src/styles/images/white-wall.png (no external dependency). ── */
+:root[data-theme="obsidian"] {
+  color-scheme: dark;
+
+  /* Content/body: same navy as the toolbar/menu (#000029). */
+  --color-bg:          #000029;
+  --color-bg-surface:  #0a0a33;
+  --color-bg-elevated: #14144a;
+  --color-bg-muted:    #05052b;
+
+  --color-text:          #e6e6f2;
+  --color-text-secondary: #9a9ac0;
+  --color-text-muted:    #5c5c85;
+  --color-text-inverse:  #000029;
+
+  --color-border:       #23234f;
+  --color-border-focus: #8a8aff;
+
+  --color-primary:       #8a8aff;
+  --color-primary-hover: #6c6cff;
+  --color-primary-light: #1a1a4d;
+
+  --color-success:       #4ade80;
+  --color-success-light: #14532d;
+  --color-danger:        #f87171;
+  --color-danger-light:  #7f1d1d;
+  --color-warning:       #fbbf24;
+  --color-warning-light: #78350f;
+  --color-info:          #60a5fa;
+  --color-info-light:    #0c2a4e;
+
+  --color-gain:  #4ade80;
+  --color-loss:  #f87171;
+
+  --color-accent: #a3a3ff;
+
+  --toolbar-bg:          #000029;
+  --toolbar-bg-secondary: #000029;
+  --toolbar-text:        #e6e6f2;
+  --toolbar-text-muted:  rgba(255, 255, 255, 0.55);
+  --toolbar-border:      rgba(255, 255, 255, 0.10);
+
+  --sidemenu-bg:         #000029;
+  --sidemenu-text:       rgba(255, 255, 255, 0.65);
+  --sidemenu-text-hover: #ffffff;
+  --sidemenu-active-bg:  rgba(255, 255, 255, 0.08);
+  --sidemenu-border:     rgba(255, 255, 255, 0.08);
+
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.6), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+}
+
+/* Toolbar + breadcrumb + side menu: #000029 base with the grain overlay.
+   The selector out-specifies each component's own background. */
+:root[data-theme="obsidian"] .toolbar,
+:root[data-theme="obsidian"] .breadcrumb,
+:root[data-theme="obsidian"] .side-menu {
+  background-color: #000029;
+  background-image: url("../images/white-wall.png");
+  /* background-image: url("https://www.transparenttextures.com/patterns/white-wall.png"); */
+  background-repeat: repeat;
+}

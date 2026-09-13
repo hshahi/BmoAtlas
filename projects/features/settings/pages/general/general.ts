@@ -124,6 +124,14 @@ import { ThemeService } from '@shared';
             >
               🟦 Merged Blue
             </button>
+            <button
+              class="btn"
+              [class.btn--primary]="themeService.resolved() === 'obsidian'"
+              [class.btn--outline]="themeService.resolved() !== 'obsidian'"
+              (click)="themeService.setPreference('obsidian')"
+            >
+              🌑 Obsidian
+            </button>
           </div>
         </div>
       </div>

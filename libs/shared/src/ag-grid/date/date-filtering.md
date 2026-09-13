@@ -1,274 +1,473 @@
-# Material date components for AG Grid
+# Date filter — usage scenarios
 
-Reusable, theme-adaptive **date** building blocks for AG Grid Community, backed by
-the **Angular Material datepicker** (Luxon adapter). They cover the three AG Grid
-extension points plus shared helpers:
-
-| File | Export(s) | Purpose |
-|---|---|---|
-| `date-support.ts` | helpers + types | format/convert/compare + AG-Grid filter-model (de)serialization |
-| `date-cell-editor.ts` | `DateCellEditor` | inline **cell editor** (Material datepicker) |
-| `date-filter.ts` | `DateFilter` | column **filter** (menu popup), fully config-driven |
-| `date-floating-filter.ts` | `DateFloatingFilter` | compact **floating filter** row control |
-
-All are exported from `@shared`.
-
-## Design principles
-
-- **Canonical value = JS `Date`.** The grid's cell value / `valueGetter` returns a
-  `Date`. Components convert `Date ↔ Luxon DateTime` only at the Material boundary
-  (`toDateTime` / `toJsDate`). This keeps the row model adapter-agnostic.
-- **Always Material, never AG Grid's native controls.** Every input, calendar,
-  dropdown, radio and button is Angular Material.
-- **Format is dictatable per column.** A `dateFormat` (Luxon tokens, e.g.
-  `dd-MMM-yyyy`) drives **display and typed parsing**. Default is
-  `DEFAULT_DATE_FORMAT = 'dd-MMM-yyyy'`.
-- **Self-contained.** Each component provides its own `provideLuxonDateAdapter()` +
-  a fresh `MAT_DATE_FORMATS`, so a per-column `dateFormat` doesn't leak between
-  columns.
-- **Theme-adaptive.** The datepicker/overlay inherit the app's `--mat-sys-*` token
-  bridge, so they follow all themes automatically.
-
-## Global setup (once)
-
-`app.config.ts` provides the Luxon adapter app-wide with the default format:
+One component (`DateFilter`); the **`filterParams`** object selects the behavior.
+Copy a column below and adjust.
 
 ```ts
-import { provideLuxonDateAdapter } from '@angular/material-luxon-adapter';
-import { buildLuxonFormats } from '@shared';
-
-providers: [
-  provideAnimationsAsync(),
-  provideLuxonDateAdapter(buildLuxonFormats()), // default dd-MMM-yyyy
-];
+import { DateFilter, DateFloatingFilter, DateCellEditor, formatDate, compareDatesByDay } from '@shared';
 ```
 
-Packages: `@angular/material-luxon-adapter`, `luxon`, `@types/luxon`.
+Three ways to use it:
+
+1. **Editing** — the cell is inline-editable with the Material datepicker (plus a filter).
+2. **Floating filter** — a compact date input under the header (`floatingFilter: true`).
+3. **Funnel only** — no floating row; the filter opens from the header funnel (`floatingFilter: false`).
 
 ---
 
-## `date-support.ts`
+## Index
 
-Pure helpers — no Angular dependency beyond the `MatDateFormats` type.
-
-| Symbol | Signature | Notes |
-|---|---|---|
-| `DEFAULT_DATE_FORMAT` | `'dd-MMM-yyyy'` | shared default |
-| `buildLuxonFormats(fmt?)` | `→ MatDateFormats` | drives display **and** parse (parse accepts `[fmt, 'yyyy-MM-dd', 'D', 'DD']`) |
-| `applyDateFormat(formats, fmt)` | mutates in place | lets a component switch its per-instance format in `agInit` |
-| `toDateTime(value)` | `Date \| DateTime \| string → DateTime \| null` | validity-checked |
-| `toJsDate(value)` | `DateTime \| Date → Date \| null` | |
-| `formatDate(value, fmt?)` | `→ string` | `''` when invalid — ideal for `valueFormatter` |
-| `compareDatesByDay(a, b)` | `→ -1 \| 0 \| 1` | day-granularity; use as `colDef.comparator` |
-| `toModelString` / `fromModelString` | `Date ↔ 'yyyy-MM-dd HH:mm:ss'` | AG Grid's canonical date-model string |
-| `DateFilterModel` | `{ filterType:'date', type, dateFrom, dateTo }` | single condition |
-| `CombinedDateFilterModel` | `{ filterType:'date', operator, conditions[] }` | AND/OR two-condition |
-| `AnyDateFilterModel`, `isCombinedModel()` | union + guard | |
-
-The filter models intentionally mirror AG Grid's built-in date-filter shapes, so
-they persist and restore through the grid's filter-model API.
+- [1. Editing (inline Material datepicker)](#1-editing-inline-material-datepicker)
+  - [1.1 Live editing](#11-live-editing)
+  - [1.2 Buffered editing with Apply and Cancel](#12-buffered-editing-with-apply-and-cancel)
+  - [1.3 Editing with a custom format](#13-editing-with-a-custom-format)
+  - [1.4 Editing with range, bounds and comparator](#14-editing-with-range-bounds-and-comparator)
+- [2. Floating filter](#2-floating-filter)
+  - [2.1 Live single date](#21-live-single-date)
+  - [2.2 Buffered with Apply and Cancel](#22-buffered-with-apply-and-cancel)
+  - [2.3 Typed entry](#23-typed-entry)
+  - [2.4 Before, after, equals conditions](#24-before-after-equals-conditions)
+  - [2.5 Range with bounds](#25-range-with-bounds)
+  - [2.6 Two conditions with AND or OR](#26-two-conditions-with-and-or-or)
+  - [2.7 Custom format](#27-custom-format)
+  - [2.8 Button combinations](#28-button-combinations)
+  - [2.9 Derived date via valueGetter](#29-derived-date-via-valuegetter)
+- [3. Funnel only (no floating row)](#3-funnel-only-no-floating-row)
+  - [3.1 Live single date](#31-live-single-date)
+  - [3.2 Buffered with Apply and Cancel](#32-buffered-with-apply-and-cancel)
+  - [3.3 Before, after, equals conditions](#33-before-after-equals-conditions)
+  - [3.4 Range with bounds and comparator](#34-range-with-bounds-and-comparator)
+  - [3.5 Two conditions with AND or OR](#35-two-conditions-with-and-or-or)
+  - [3.6 Custom format](#36-custom-format)
 
 ---
 
-## `DateCellEditor` — inline cell editor
+## 1. Editing (inline Material datepicker)
 
-Material datepicker used for **inline editing**. `getValue()` returns a JS `Date`.
+The cell is editable via `DateCellEditor` and also filterable. Requires these grid options:
 
-**Column config:**
+```html
+[singleClickEdit]="true"
+[stopEditingWhenCellsLoseFocus]="false"
+```
+
+### 1.1 Live editing
+Edit inline; filter applies on pick, Cancel clears.
 ```ts
 {
   field: 'date',
-  editable: (p) => !p.node?.rowPinned,
-  cellEditor: DateCellEditor,
-  cellEditorParams: { dateFormat: 'dd-MMM-yyyy' }, // DateCellEditorParams
   valueFormatter: (p) => formatDate(p.value),
   comparator: compareDatesByDay,
-}
-```
-**Grid options it relies on:**
-```html
-[singleClickEdit]="true"                <!-- one click enters edit -->
-[stopEditingWhenCellsLoseFocus]="false" <!-- calendar overlay doesn't kill the editor -->
-```
-
-**Behavior**
-- **One-click open** — on edit start (`afterGuiAttached`) it focuses the input and
-  opens the calendar, so a single click both edits and opens (no click-twice).
-- **Commit on pick** — selecting a date (or a valid typed value) commits and closes
-  via `params.stopEditing()`.
-- **Revert on close-without-pick** — closing the calendar with no selection cancels.
-- **Invalid-date guard** — `isCancelAfterEnd()` rejects unparseable typed text (AG
-  Grid has no built-in date validation).
-- **Inline, not popup** — use it inline (do **not** set `cellEditorPopup: true`); a
-  popup editor floats over the cell while the cell's formatted value still renders
-  underneath (two dates). The calendar still opens in its own body-level overlay.
-
-> Note: AG Grid draws its own border/shadow on the editing cell, which would double
-> up with the field's outline. `_material.css` suppresses it for date-editor cells:
-> `.ag-cell-inline-editing:has(app-date-cell-editor) { border-color: transparent !important; box-shadow: none !important; }`
-
----
-
-## `DateFilter` — column filter (menu popup)
-
-One component; behavior is entirely driven by `filterParams` (`DateFilterParams`).
-Reads the cell value via the value getter (`params.getValue(node)`), so it works
-with `field` or `valueGetter` columns.
-
-### `filterParams`
-
-| Param | Type | Default | Effect |
-|---|---|---|---|
-| `dateFormat` | `string` | `'dd-MMM-yyyy'` | display + typed parsing for this column's filter |
-| `defaultCondition` | `'equals'\|'before'\|'after'\|'inRange'` | `'equals'` | condition selected when opened |
-| `comparator` | `(filterDate, cellDate) => number` | day-granularity | override matching (`<0` cell before filter, `0` equal, `>0` after) |
-| `buttons` | `('apply'\|'clear'\|'cancel'\|'reset')[]` | `[]` | which action buttons to show (see below) |
-| `allowTyping` | `boolean` | `false` | `true` = don't auto-open the calendar on click, so the field can be typed |
-| `min` / `max` | `Date` | — | bound the selectable dates in the calendars |
-| `maxConditions` | `1 \| 2` | `1` | `2` shows a second condition + AND/OR toggle |
-| `defaultJoinOperator` | `'AND' \| 'OR'` | `'AND'` | initial join when `maxConditions: 2` |
-| `closeOnSelect` | `boolean` | `false` | live mode: apply + close the popup as soon as a date is picked |
-
-### Live vs. Apply
-
-- **Live** (no `'apply'` in `buttons`): the filter applies on every change.
-- **Apply mode** (`buttons` includes `'apply'`): edits are **buffered**; nothing
-  filters until **Apply** is pressed.
-
-### Buttons
-
-- **Apply** — commit the pending edits and close the popup.
-- **Cancel** — **clear the dates + the active filter** and close the popup (same as
-  Clear; provided because "Cancel" reads better next to Apply).
-- **Clear** — clear the dates + the active filter and close.
-- **Reset** — alias of Clear.
-
-### Two conditions (AND/OR)
-
-With `maxConditions: 2` a Material **`mat-radio-group` (AND / OR)** and a second
-condition row appear. `doesFilterPass` evaluates both and combines with the
-operator. This is **our** Material implementation — AG Grid's native AND/OR only
-works with its own provided filters, not custom ones. The emitted model is
-AG-compatible:
-```ts
-{ filterType:'date', operator:'OR', conditions: [
-  { filterType:'date', type:'before', dateFrom:'…' },
-  { filterType:'date', type:'after',  dateFrom:'…' },
-]}
-```
-
-### Popup open/close mechanics (important)
-
-- `afterGuiAttached(params)` captures `params.hidePopup`, which Apply/Cancel/Clear
-  call to **close the popup immediately**.
-- The Material calendar and select render in a **CDK overlay outside** the AG popup.
-  Without help, clicking them would make AG Grid think you clicked "outside" and
-  close the filter popup prematurely. Each datepicker/`mat-select` therefore carries
-  `panelClass="ag-custom-component-popup"` — a class AG Grid treats as part of the
-  grid, so the popup **stays open** until Apply/Cancel.
-
----
-
-## `DateFloatingFilter` — floating-filter row control
-
-Compact Material date input shown under the header (params: `DateFloatingFilterParams`,
-just `{ dateFormat }`).
-
-- `onParentModelChanged` reflects the parent `DateFilter` model (shows the first
-  date); picking pushes a single (`equals`) date to the parent via
-  `params.parentFilterInstance(inst => inst.onFloatingFilterChanged(date))`.
-- **One-click** opens the calendar (`(click)="picker.open()"`).
-- **Depends on `DateFilter`** as its parent (AG Grid's floating-filter contract).
-- Sized to vertically-center and shrink to the cell (Material fields have a ~180px
-  min-width that must be defeated in a narrow grid cell).
-
-To use a column **without** the floating filter, set `floatingFilter: false`; AG
-Grid then shows a **filter funnel in the header** that opens the same `DateFilter`.
-
----
-
-## Scenarios (recipes)
-
-Every scenario is just a different `filterParams` (and column) configuration of the
-**same** components — mix and match as your use case needs.
-
-| Scenario | Key `filterParams` (+ column options) |
-|---|---|
-| Instant single-date filter | `buttons: ['cancel'], closeOnSelect: true` |
-| Typed entry, buffered Apply/Cancel | `allowTyping: true, buttons: ['cancel', 'apply']` |
-| Date range with bounds + comparator | `defaultCondition: 'inRange', min, max, comparator, buttons: ['cancel', 'apply']` |
-| Two conditions (AND/OR) | `maxConditions: 2, defaultJoinOperator, buttons: ['cancel', 'apply']` |
-| Custom format, header funnel | `dateFormat`, `closeOnSelect: true` + `floatingFilter: false` |
-
-### Full column wiring (filter + floating filter + inline editor)
-
-```ts
-{
-  field: 'myDate',                          // or a valueGetter that returns a Date
-  valueFormatter: (p) => formatDate(p.value),
-  comparator: compareDatesByDay,
-  // inline editing
   editable: (p) => !p.node?.rowPinned,
   cellEditor: DateCellEditor,
   cellEditorParams: { dateFormat: 'dd-MMM-yyyy' },
-  // filter + floating filter
   filter: DateFilter,
-  filterParams: { dateFormat: 'dd-MMM-yyyy' },
+  filterParams: { dateFormat: 'dd-MMM-yyyy', closeOnSelect: true, buttons: ['cancel'] },
   floatingFilter: true,
   floatingFilterComponent: DateFloatingFilter,
   floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
 }
 ```
 
-### Instant single-date filter
-Pick a date → it applies immediately and the popup closes; **Cancel** clears it.
+### 1.2 Buffered editing with Apply and Cancel
+Edit inline; filter waits for Apply.
 ```ts
-filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['cancel'], closeOnSelect: true }
-```
-
-### Typed entry with Apply / Cancel (buffered)
-Type or pick freely; nothing filters until **Apply**. The popup stays open while you
-edit; **Apply** commits, **Cancel** clears — both close it.
-```ts
-filterParams: { dateFormat: 'dd-MMM-yyyy', allowTyping: true, buttons: ['cancel', 'apply'] }
-```
-
-### Date range with bounds + custom comparator
-Defaults to a From/To range, restricts the selectable dates, and overrides matching.
-```ts
-filterParams: {
-  defaultCondition: 'inRange',
-  min: new Date(2015, 0, 1),
-  max: new Date(2030, 11, 31),
-  comparator: (filterDate, cellDate) => compareDatesByDay(cellDate, filterDate),
-  buttons: ['cancel', 'apply'],
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  editable: (p) => !p.node?.rowPinned,
+  cellEditor: DateCellEditor,
+  cellEditorParams: { dateFormat: 'dd-MMM-yyyy' },
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['cancel', 'apply'] },
+  floatingFilter: false,
 }
 ```
 
-### Two conditions with AND / OR
-Shows a Material AND/OR toggle + a second condition row; emits a combined model.
+### 1.3 Editing with a custom format
+Display, parse and edit in `dd/MM/yyyy`.
 ```ts
-filterParams: { maxConditions: 2, defaultJoinOperator: 'OR', buttons: ['cancel', 'apply'] }
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value, 'dd/MM/yyyy'),
+  comparator: compareDatesByDay,
+  editable: (p) => !p.node?.rowPinned,
+  cellEditor: DateCellEditor,
+  cellEditorParams: { dateFormat: 'dd/MM/yyyy' },
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd/MM/yyyy', closeOnSelect: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd/MM/yyyy' },
+}
 ```
 
-### Custom per-column format, no floating filter (header funnel)
-A different display/parse format; with no floating filter the filter opens from the
-header funnel.
+### 1.4 Editing with range, bounds and comparator
+Inline edit + a bounded From/To range filter with a custom comparator.
 ```ts
-filterParams: { dateFormat: 'yyyy/MM/dd', closeOnSelect: true },
-floatingFilter: false,
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  editable: (p) => !p.node?.rowPinned,
+  cellEditor: DateCellEditor,
+  cellEditorParams: { dateFormat: 'dd-MMM-yyyy' },
+  filter: DateFilter,
+  filterParams: {
+    dateFormat: 'dd-MMM-yyyy',
+    defaultCondition: 'inRange',
+    min: new Date(2015, 0, 1),
+    max: new Date(2030, 11, 31),
+    comparator: (filterDate, cellDate) => compareDatesByDay(cellDate, filterDate),
+    buttons: ['cancel', 'apply'],
+  },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
 ```
 
 ---
 
-## Gotchas / rationale
+## 2. Floating filter
 
-- **Unitless `0` corner tokens break Material calc()** — the `--mat-sys-corner-*`
-  overrides in `_material.css` use `0px` (not `0`), otherwise the outlined field's
-  `max(16px, … + 4px)` padding collapses and text hugs the border.
-- **`stopEditingWhenCellsLoseFocus: false`** is required on grids using the cell
-  editor, so the calendar overlay doesn't end the edit.
-- **`panelClass="ag-custom-component-popup"`** is what keeps the *filter* popup open
-  while using the calendar/select.
-- **Value type must be `Date`** (or a `valueGetter` returning `Date`); `getRowId`
-  should use a stable string key, not the `Date`.
+A compact date input under the header. All columns here set
+`floatingFilter: true` + `DateFloatingFilter`.
+
+### 2.1 Live single date
+Applies on pick; Cancel clears.
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', closeOnSelect: true, buttons: ['cancel'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.2 Buffered with Apply and Cancel
+Nothing filters until Apply; both buttons close the popup.
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['cancel', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.3 Typed entry
+Type the date instead of only picking it.
+
+Live (no buttons):
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', allowTyping: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+Typed + buffered:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', allowTyping: true, buttons: ['cancel', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.4 Before, after, equals conditions
+Set `defaultCondition` to the one you want.
+
+Equals:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'equals', closeOnSelect: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+Before:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'before', closeOnSelect: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+After:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'after', closeOnSelect: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.5 Range with bounds
+From/To range restricted to a min/max window.
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: {
+    dateFormat: 'dd-MMM-yyyy',
+    defaultCondition: 'inRange',
+    min: new Date(2015, 0, 1),
+    max: new Date(2030, 11, 31),
+    buttons: ['cancel', 'apply'],
+  },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.6 Two conditions with AND or OR
+Second condition row + a Material AND/OR toggle.
+
+AND (default):
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', maxConditions: 2, buttons: ['cancel', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+OR (default join):
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', maxConditions: 2, defaultJoinOperator: 'OR', buttons: ['cancel', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.7 Custom format
+Any Luxon format for display/parse (match the floating param).
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value, 'yyyy/MM/dd'),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'yyyy/MM/dd', closeOnSelect: true },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'yyyy/MM/dd' },
+}
+```
+
+### 2.8 Button combinations
+Pick any subset of `'apply' | 'cancel' | 'clear' | 'reset'`.
+
+Clear only (live):
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', closeOnSelect: true, buttons: ['clear'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+Apply + Clear:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['clear', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+Reset + Cancel + Apply:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['reset', 'cancel', 'apply'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+### 2.9 Derived date via valueGetter
+Column value computed from another field (read-only), still fully filterable.
+```ts
+{
+  colId: 'settlement',
+  valueGetter: (p) => p.data ? new Date(p.data.date.getFullYear(), p.data.date.getMonth(), p.data.date.getDate() + 2) : null,
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', closeOnSelect: true, buttons: ['cancel'] },
+  floatingFilter: true,
+  floatingFilterComponent: DateFloatingFilter,
+  floatingFilterComponentParams: { dateFormat: 'dd-MMM-yyyy' },
+}
+```
+
+---
+
+## 3. Funnel only (no floating row)
+
+No floating input; the filter opens from the header funnel. All columns here set
+`floatingFilter: false` and omit the `floatingFilter*` component keys.
+
+### 3.1 Live single date
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', closeOnSelect: true, buttons: ['cancel'] },
+  floatingFilter: false,
+}
+```
+
+### 3.2 Buffered with Apply and Cancel
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', buttons: ['cancel', 'apply'] },
+  floatingFilter: false,
+}
+```
+
+### 3.3 Before, after, equals conditions
+Equals:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'equals', closeOnSelect: true },
+  floatingFilter: false,
+}
+```
+Before:
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'before', closeOnSelect: true },
+  floatingFilter: false,
+}
+```
+After (bounded to on/after today):
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', defaultCondition: 'after', min: new Date(), closeOnSelect: true },
+  floatingFilter: false,
+}
+```
+
+### 3.4 Range with bounds and comparator
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: {
+    dateFormat: 'dd-MMM-yyyy',
+    defaultCondition: 'inRange',
+    min: new Date(2015, 0, 1),
+    max: new Date(2030, 11, 31),
+    comparator: (filterDate, cellDate) => compareDatesByDay(cellDate, filterDate),
+    buttons: ['cancel', 'apply'],
+  },
+  floatingFilter: false,
+}
+```
+
+### 3.5 Two conditions with AND or OR
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'dd-MMM-yyyy', maxConditions: 2, defaultJoinOperator: 'OR', buttons: ['cancel', 'apply'] },
+  floatingFilter: false,
+}
+```
+
+### 3.6 Custom format
+```ts
+{
+  field: 'date',
+  valueFormatter: (p) => formatDate(p.value, 'yyyy-MM-dd'),
+  comparator: compareDatesByDay,
+  filter: DateFilter,
+  filterParams: { dateFormat: 'yyyy-MM-dd', allowTyping: true, buttons: ['cancel', 'apply'] },
+  floatingFilter: false,
+}
+```

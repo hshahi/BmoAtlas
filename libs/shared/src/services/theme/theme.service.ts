@@ -3,14 +3,15 @@ import { isPlatformBrowser } from '@angular/common';
 
 export type Theme =
   | 'light' | 'dark' | 'silver' | 'silver-shine' | 'midnight' | 'platinum' | 'chrome' | 'titanium'
-  | 'nord' | 'dracula' | 'tokyo-night' | 'high-contrast' | 'catppuccin' | 'merged-blue';
+  | 'nord' | 'dracula' | 'tokyo-night' | 'high-contrast' | 'catppuccin' | 'merged-blue'
+  | 'obsidian';
 
 const STORAGE_KEY = 'bmo-atlas-theme';
 
 /** All selectable themes, in toggle-cycle order. */
 export const THEMES: readonly Theme[] = [
   'light', 'dark', 'silver', 'silver-shine', 'midnight', 'platinum', 'chrome', 'titanium',
-  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin', 'merged-blue',
+  'nord', 'dracula', 'tokyo-night', 'high-contrast', 'catppuccin', 'merged-blue', 'obsidian',
 ];
 
 /** Human-readable labels for each theme (for pickers / switchers). */
@@ -29,6 +30,7 @@ export const THEME_LABELS: Readonly<Record<Theme, string>> = {
   'high-contrast': 'High Contrast',
   'catppuccin': 'Catppuccin',
   'merged-blue': 'Merged Blue',
+  'obsidian': 'Obsidian',
 };
 
 @Injectable({ providedIn: 'root' })
